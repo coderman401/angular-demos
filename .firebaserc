@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "coderman401-angular-demos": {
+      "hosting": {
+        "firebase-chatapp": [
+          "coderman401-angular-demos"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "coderman401-angular-demos"
+  }
+}
