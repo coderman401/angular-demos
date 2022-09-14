@@ -5,9 +5,7 @@ import { takeUntil } from 'rxjs/operators';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 // import { LocalNotificationService, NotificationId } from './local-notification.service';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class FirebaseStorageService implements OnDestroy {
   // vars
   private uploadPercentage$ = new BehaviorSubject<number>(0);
