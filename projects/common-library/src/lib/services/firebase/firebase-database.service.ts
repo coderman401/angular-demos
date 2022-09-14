@@ -44,7 +44,7 @@ export class FirebaseDatabaseService {
    * @param tableName: String
    * @param orderBy: String (optional)
    */
-  getValueOnChanges(tableName: string, orderBy: string = '') {
+  getSnapshotChanges(tableName: string, orderBy: string = '') {
     const path = this.commonService.dbName + '/' + tableName;
     let dbRef = this.db.list(path);
     if (orderBy) {
@@ -56,6 +56,21 @@ export class FirebaseDatabaseService {
       data.uniqueId = action.payload.key;
       return data;
     })));
+  }
+
+  /**
+   *  function to fetch the data on every value changes.
+   *
+   * @param tableName: String
+   * @param orderBy: String (optional)
+   */
+  getValueChanges(tableName: string, orderBy: string = '') {
+    const path = this.commonService.dbName + '/' + tableName;
+    let dbRef = this.db.list(path);
+    if (orderBy) {
+      dbRef = this.db.list(path, ref => ref.orderByChild(orderBy));
+    }
+    return dbRef.valueChanges();
   }
 
   getObjectOnce(tableName: string, refId: string) {

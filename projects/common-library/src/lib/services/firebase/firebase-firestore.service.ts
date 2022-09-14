@@ -50,7 +50,7 @@ export class FirebaseFirestoreService {
    * @param collectionName: String
    * @param orderBy: String (optional)
    */
-  getValueOnChanges(collectionName: string, orderByKey: string = '', order: 'asc' | 'desc' = 'asc') {
+  getSnapshotChanges(collectionName: string, orderByKey: string = '', order: 'asc' | 'desc' = 'asc') {
     let dbRef = this.afs.collection(collectionName);
     if (orderByKey) {
       dbRef = this.afs.collection(collectionName, ref => ref.orderBy(orderByKey, order));
@@ -60,6 +60,20 @@ export class FirebaseFirestoreService {
       data.key = action.payload.doc.id;
       return data;
     })));
+  }
+
+  /**
+   *  function to fetch the data on every db changes.
+   *
+   * @param collectionName: String
+   * @param orderBy: String (optional)
+   */
+  getValueChanges(collectionName: string, orderByKey: string = '', order: 'asc' | 'desc' = 'asc') {
+    let dbRef = this.afs.collection(collectionName);
+    if (orderByKey) {
+      dbRef = this.afs.collection(collectionName, ref => ref.orderBy(orderByKey, order));
+    }
+    return dbRef.valueChanges();
   }
 
   /**

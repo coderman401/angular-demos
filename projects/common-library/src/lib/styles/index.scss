@@ -79,10 +79,6 @@ h5 {
 .mat-toolbar {
   height: 5.6rem;
 }
-// extra css
-.container {
-  padding: 1.6rem;
-}
 .content-divider {
   margin-top: 1.6rem !important;
   margin-bottom: 1.6rem !important;
@@ -150,4 +146,26 @@ h5 {
 .hashtag {
   color: var(--color-primary) !important;
   line-height: 2.4;
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.white-spinner:before {
+  content: "";
+  box-sizing: border-box;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2rem;
+  height: 2rem;
+  margin-top: -1rem;
+  margin-left: -1rem;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  border-top-color: rgba(38, 38, 38, 0.2);
+  animation: spinner 0.8s linear infinite;
 }
