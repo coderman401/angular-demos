@@ -1,0 +1,11 @@
+<div class="header">
+  <mat-toolbar color="primary">
+    <mat-toolbar-row class="toolbar-row">
+      <a routerLink="/" class="header-logo">
+        <img src="../../../../assets/logo_white_rect.png" alt="Coderman401 LOGO" />
+      </a>
+      <mat-slide-toggle class="theme-toggle" [checked]="themeService.isDark" (change)="toggleDarkTheme($event.checked)">
+        Dark theme</mat-slide-toggle>
+    </mat-toolbar-row>
+  </mat-toolbar>
+</div>

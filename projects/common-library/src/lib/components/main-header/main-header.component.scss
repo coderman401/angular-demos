@@ -1,0 +1,22 @@
+.header {
+  .header-logo {
+    text-decoration: none;
+    img {
+      width: 17.6rem;
+      vertical-align: middle;
+      @media (max-width: 640px) {
+        width: 16rem;
+      }
+    }
+    .header-title {
+      vertical-align: middle;
+      margin-left: 1.2rem;
+      font-size: 2.2rem;
+      color: #fff;
+    }
+  }
+}
+.mat-toolbar-row {
+  align-items: center;
+  justify-content: space-between;
+}

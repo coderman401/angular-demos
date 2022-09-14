@@ -25,7 +25,12 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "projects/tictactoe/src/favicon.ico",
-              "projects/tictactoe/src/assets"
+              "projects/tictactoe/src/assets",
+              {
+                "glob": "**/*",
+                "input": "dist/common-library/assets",
+                "output": "assets"
+              }
             ],
             "styles": [
               "projects/tictactoe/src/styles.scss"
@@ -125,7 +130,12 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "projects/image-editor/src/favicon.ico",
-              "projects/image-editor/src/assets"
+              "projects/image-editor/src/assets",
+              {
+                "glob": "**/*",
+                "input": "dist/common-library/assets",
+                "output": "assets"
+              }
             ],
             "styles": [
               "projects/image-editor/src/styles.scss"
@@ -256,7 +266,12 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "projects/firebase-chatapp/src/favicon.ico",
-              "projects/firebase-chatapp/src/assets"
+              "projects/firebase-chatapp/src/assets",
+              {
+                "glob": "**/*",
+                "input": "dist/common-library/assets",
+                "output": "assets"
+              }
             ],
             "styles": [
               "projects/firebase-chatapp/src/styles.scss"

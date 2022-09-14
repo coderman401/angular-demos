@@ -1,0 +1,67 @@
+.mat-toolbar,
+.mat-toolbar-multiple-rows {
+    min-height: 5.6rem !important;
+    font-size: 1.4rem !important;
+}
+
+.mat-toolbar-row,
+.mat-toolbar-single-row {
+    min-height: 5.6rem !important;
+    height: 5.6rem !important;
+}
+
+.mat-toolbar-row a,
+.mat-toolbar-single-row a {
+    font-size: 1.4rem;
+}
+
+.mat-list-base
+.mat-list-item {
+    font-size: 1.4rem;
+}
+* {
+    font-family: 'Saira Condensed', 'sans-serif';
+    &:focus {
+        outline: none;
+    }
+}
+.material-icons {
+    font-family: 'Material Icons' !important;
+}
+
+.tech-logos {
+    &:focus {
+        outline: none;
+    }
+}
+
+.tech-logos:hover {
+    .angular {
+        svg {
+            path {
+                fill: var(--color-primary-light);
+            }
+            path:first-child, path:nth-child(2) {
+                fill: var(--color-secondary);
+            }
+        }
+    }
+    .firebase {
+        svg {
+            path, circle {
+                fill: rgba(var(--color-secondary-rgb), 0.5);
+                &.lol {
+                    fill: var(--color-secondary);
+                }
+            }
+        }
+    }
+    mat-card-title {
+        color: var(--color-secondary);
+    }
+    svg {
+        path, circle {
+            fill: var(--color-secondary);
+        }
+    }
+}

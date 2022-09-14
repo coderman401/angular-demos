@@ -6,6 +6,7 @@ import { FIREBASE_OPTIONS } from '@angular/fire/compat';
 // providers
 import { environment } from '../environments/environment';
 import { AppComponent } from './app.component';
+import { CommonLibraryModule } from 'common-library';
 
 @NgModule({
   declarations: [
@@ -13,7 +14,8 @@ import { AppComponent } from './app.component';
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    CommonLibraryModule,
   ],
   providers: [
     { provide: FIREBASE_OPTIONS, useValue: environment.firebase }

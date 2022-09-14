@@ -3,5 +3,13 @@
   "dest": "../../dist/common-library",
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "assets": [
+    "assets",
+    {
+      "glob": "**/*",
+      "input": "src/lib/styles",
+      "output": "styles"
+    }
+  ]
 }

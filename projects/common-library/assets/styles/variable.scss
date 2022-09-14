@@ -1,0 +1,25 @@
+:root {
+  --color-primary: #00bcd4;
+  --color-primary-rgb: 0, 188, 212;
+  --base-font-size: 2.56rem;
+  --base-line-height: 4rem;
+  --color-primary-text: #121212;
+  --color-primary-light: #ffffff;
+  --text-muted: #6c757d;
+  --color-secondary: #aeea00;
+  --color-secondary-rgb: 174, 234, 0;
+  --color-background: #fff;
+}
+
+body.dark-theme {
+  --color-primary: #00bcd4;
+  --color-primary-rgb: 0, 188, 212;
+  --base-font-size: 2.56rem;
+  --base-line-height: 4rem;
+  --color-primary-text: #ffffff;
+  --color-primary-light: #424242;
+  --text-muted: #6c757d;
+  --color-secondary: #aeea00;
+  --color-secondary-rgb: 174, 234, 0;
+  --color-background: #424242;
+}

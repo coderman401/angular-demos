@@ -1,0 +1,17 @@
+.footer {
+    z-index: 1;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    .version {
+        font-size: 1.28rem;
+        font-weight: normal;
+        color: #fcfcfc;
+    }
+    .header-title {
+        vertical-align: middle;
+        margin-left: 1.2rem;
+        font-size: 2.2rem;
+        color: #fff;
+    }
+}
