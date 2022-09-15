@@ -7,6 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration  ",
     "build-lib": "ng build common-library --configuration production",
+    "build-tictactoe": "ng build tictactoe --configuration production",
     "test": "ng test"
   },
   "private": true,
