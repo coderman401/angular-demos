@@ -1,0 +1,9 @@
+<ng-container *ngFor="let row of board">
+  <div class="board-row">
+    <ng-container *ngFor="let column of row">
+      <button class="square {{gameService.squares[column] }}" (click)="clickSquare(column)">
+        {{gameService.squares[column] }}
+      </button>
+    </ng-container>
+  </div>
+</ng-container>

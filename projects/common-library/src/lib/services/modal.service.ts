@@ -1,5 +1,7 @@
 // modules
 import { Injectable } from '@angular/core';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { AlertComponent } from '../components/alert/alert.component';
 
 @Injectable({
   providedIn: 'root'
@@ -7,20 +9,17 @@ import { Injectable } from '@angular/core';
 
 export class ModalService {
 
-  private _modalRef: any[] = [];
-  private _modalLevel = 0;
+  private _modalRef!: MatDialogRef<any>;
 
-  constructor(
-  ) { }
+  constructor(private dialog: MatDialog) { }
 
-  get modalRef(): any[] { return this._modalRef; }
-  set modalRef(value: any[]) { this._modalRef = value; }
+  get modalRef(): MatDialogRef<any> { return this._modalRef; }
+  set modalRef(value: MatDialogRef<any>) { this._modalRef = value; }
 
-  get modalLevel(): number { return this._modalLevel; }
-  set modalLevel(value: number) {
-    this._modalLevel = value;
-    if (this.modalLevel === 0) {
-      this.modalRef = [];
-    }
+  openAlert(message: string) {
+    this._modalRef = this.dialog.open(AlertComponent, {
+      width: '300px',
+      data: { message }
+    });
   }
 }
