@@ -1,14 +1,14 @@
 {
+  "projects": {
+    "default": "coderman401-angular-demos"
+  },
   "targets": {
     "coderman401-angular-demos": {
       "hosting": {
-        "firebase-chatapp": [
-          "coderman401-angular-demos"
+        "tictactoe-angular-coderman401": [
+          "tictactoe-angular-coderman401"
         ]
       }
     }
-  },
-  "projects": {
-    "default": "coderman401-angular-demos"
   }
 }
