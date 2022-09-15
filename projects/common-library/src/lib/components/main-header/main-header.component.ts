@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ThemeService } from '../../services';
 
 @Component({
@@ -7,6 +7,8 @@ import { ThemeService } from '../../services';
   styleUrls: ['./main-header.component.scss']
 })
 export class MainHeaderComponent {
+
+  @Input() showToggleThemeButton: boolean = true;
 
   constructor(public themeService: ThemeService) { }
 

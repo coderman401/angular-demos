@@ -1,3 +1,4 @@
 export const environment = {
-  production: true
+  production: true,
+  socketURL: 'https://coderman-socket.herokuapp.com'
 };

@@ -1,0 +1,29 @@
+.board-row {
+  display: flex;
+  .square {
+    background: #fff;
+    border: 3px solid #cfc8b8;
+    font-weight: bold;
+    text-align: center;
+    transition: transform 0.5s;
+    font-size: 6.4rem;
+    height: 100px;
+    width: 100px;
+    color: #cfc8b8;
+    padding: 0;
+    &:hover {
+      transition: background-color 0.5s ease;
+      background-color: #e6e2da;
+      cursor: pointer;
+    }
+    &:focus {
+      outline: none;
+    }
+    &.X {
+      background-color: #524a4c;
+    }
+    &.O {
+      background-color: #6b948c;
+    }
+  }
+}
