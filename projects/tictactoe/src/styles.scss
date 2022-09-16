@@ -1,1 +1,26 @@
 @use "../../../dist/common-library/styles/index.scss";
+@import url("https://fonts.googleapis.com/css?family=Patrick+Hand&display=swap");
+
+body {
+  margin: 0;
+  padding: 0;
+  & * {
+    font-family: "Patrick Hand", cursive !important;
+  }
+}
+.mat-form-field-appearance-outline {
+  .mat-form-field-label {
+    top: 2rem;
+    margin-top: 0;
+  }
+  .mat-form-field-infix {
+    padding: 1.2rem 0;
+  }
+  &.mat-form-field-can-float.mat-form-field-should-float,
+  &.mat-form-field-can-float .mat-input-server:focus + .mat-form-field-label-wrapper {
+    .mat-form-field-label {
+      transform: translateY(-2rem) scale(0.75);
+      width: 133.3333333333%;
+    }
+  }
+}

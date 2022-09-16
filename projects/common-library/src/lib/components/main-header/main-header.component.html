@@ -4,7 +4,8 @@
       <a routerLink="/" class="header-logo">
         <img src="../../../../assets/logo_white_rect.png" alt="Coderman401 LOGO" />
       </a>
-      <mat-slide-toggle class="theme-toggle" [checked]="themeService.isDark" (change)="toggleDarkTheme($event.checked)">
+      <mat-slide-toggle class="theme-toggle" [checked]="themeService.isDark" (change)="toggleDarkTheme($event.checked)"
+        *ngIf="showToggleThemeButton">
         Dark theme</mat-slide-toggle>
     </mat-toolbar-row>
   </mat-toolbar>

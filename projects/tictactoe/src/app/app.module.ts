@@ -5,6 +5,14 @@ import { CommonLibraryModule } from 'common-library';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
+import { environment } from '../environments/environment';
+
+const config: SocketIoConfig = {
+  url: environment.socketURL, options: {
+    transports: ['websocket']
+  }
+};
 
 @NgModule({
   declarations: [
@@ -15,6 +23,7 @@ import { AppComponent } from './app.component';
     AppRoutingModule,
     BrowserAnimationsModule,
     CommonLibraryModule,
+    SocketIoModule.forRoot(config)
   ],
   providers: [],
   bootstrap: [AppComponent]
