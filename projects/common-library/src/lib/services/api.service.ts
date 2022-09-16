@@ -1,21 +1,22 @@
 // modules
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-// environment
 // services
+import { API_URL } from './';
 import { LocalStorageService, CommonActionService, SnackbarService } from '.';
-import { API_URL } from '../common.config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
   // vars
-  private url = API_URL;
+  private url!: string;
 
-  constructor(private http: HttpClient, private commonService: CommonActionService, private localStorageService: LocalStorageService, private snackbarService: SnackbarService) { }
+  constructor(private http: HttpClient, private commonService: CommonActionService, private localStorageService: LocalStorageService, private snackbarService: SnackbarService, @Inject(API_URL) apiURL: string) {
+    this.url = apiURL;
+  }
 
   get(path: string, queryParams: any = {}, isDirectURL = false): Observable<any> {
     const params = this.createQueryParams(queryParams);

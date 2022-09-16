@@ -4,6 +4,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonFirebaseAppModule, CommonLibraryModule } from 'common-library';
+import { DEBUG_MODE } from '@angular/fire/compat/analytics';
 // components
 import { AppComponent } from './app.component';
 // configs
@@ -18,7 +19,10 @@ import { environment } from '../environments/environment';
     AppRoutingModule,
     BrowserAnimationsModule,
     CommonLibraryModule,
-    CommonFirebaseAppModule.init(environment.firebase),
+    CommonFirebaseAppModule.init(),
+  ],
+  providers: [
+    { provide: DEBUG_MODE, useValue: !environment.production },
   ],
   bootstrap: [AppComponent]
 })

@@ -9,6 +9,8 @@
     "build-lib": "ng build common-library --configuration production",
     "build-tictactoe": "ng build tictactoe --configuration production",
     "build-chatapp": "ng build firebase-chatapp --configuration production",
+    "serve-tictactoe": "ng serve tictactoe",
+    "serve-chatapp": "ng serve firebase-chatapp",
     "test": "ng test"
   },
   "private": true,
