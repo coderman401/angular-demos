@@ -1,0 +1,91 @@
+<div class="game">
+  <div class="selection">
+    <mat-radio-group class="select-player" [(ngModel)]="player">
+      <mat-radio-button color="primary" class="radio" value="single" (change)="changePlayer($event)">Single Player
+      </mat-radio-button>
+      <mat-radio-button color="primary" class="radio" value="two" (change)="changePlayer($event)">Two Player
+      </mat-radio-button>
+      <mat-radio-button color="primary" class="radio" value="friend" (change)="changePlayer($event)">Play with Friend
+      </mat-radio-button>
+    </mat-radio-group>
+    <mat-radio-group class="select-player" [(ngModel)]="difficulty" *ngIf="player === 'single'">
+      <mat-radio-button color="primary" class="radio" value="easy" (change)="changeDifficulty($event)">Easy
+      </mat-radio-button>
+      <mat-radio-button color="primary" class="radio" value="hard" (change)="changeDifficulty($event)">Hard
+      </mat-radio-button>
+      <mat-radio-button color="primary" class="radio" value="expert" (change)="changeDifficulty($event)">Expert
+      </mat-radio-button>
+    </mat-radio-group>
+  </div>
+
+  <div class="game-info">
+    <div class="single-info" *ngIf="player == 'single'">
+      <label>You : <img src="assets/images/o.png" width="18" alt="O" /></label>
+      <label>Computer: <img src="assets/images/x.png" width="18" alt="X" /></label>
+    </div>
+    <div class="single-info" *ngIf="player == 'two' || (player == 'friend' && (gameService.isReady))">
+      <label>Turn :
+        <img alt="player" src="assets/images/{{(gameService.xIsNext ? 'x' : 'o')}}.png"
+          alt="{{(gameService.xIsNext ? 'x' : 'o').toUpperCase()}}" width="18" />
+        - Player
+      </label>
+    </div>
+  </div>
+
+  <div class="single-info" *ngIf="gameService?.roomInfo?.message && player == 'friend'">
+    <label>{{gameService.roomInfo.message}}</label>
+  </div>
+
+  <div *ngIf="player == 'friend' && !(gameService.isReady)" class="room-info">
+    <label>How To Play</label>
+    <ol>
+      <li>Player 1 Create a new game by entering the username</li>
+      <li>Player 2 Enter username and the room id that is shared by player 1 and click on Join Game to continue.</li>
+    </ol>
+
+    <div class="create-game">
+      <label>Create a new Game</label>
+      <div class="form-group">
+        <mat-form-field appearance="outline">
+          <mat-label>Enter Your Name</mat-label>
+          <input matInput placeholder="Your Name" [formControl]="userCreate">
+          <mat-error *ngIf="userCreate?.errors?.['required']">Username is required.</mat-error>
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="createGame()">Create Game</button>
+      </div>
+    </div>
+    <div class="join-game">
+      <label>Join an existing game.</label>
+      <div class="form-group">
+        <mat-form-field appearance="outline">
+          <mat-label>Enter Your Name</mat-label>
+          <input matInput placeholder="Your Name" [formControl]="userJoin">
+          <mat-error *ngIf="userJoin?.errors?.['required']">Username is required.</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Enter Room Id</mat-label>
+          <input matInput placeholder="Room ID" [formControl]="roomId">
+          <mat-error *ngIf="roomId?.errors?.['required']">Room Id is required.</mat-error>
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="joinGame()">Join Game</button>
+      </div>
+    </div>
+  </div>
+  <board class="board" *ngIf="player == 'single' || player == 'two' ||(player == 'friend' && (gameService.isReady))">
+  </board>
+
+  <div class="game-stats" *ngIf="player == 'single' || player == 'two' ||(player == 'friend' && (gameService.isReady))">
+    <p class="stats"><img src="assets/images/x.png" width="15" alt="X"> - Wins :
+      <br><span>{{winningCount.xWins}}</span>
+    </p>
+    <p class="stats"><img src="assets/images/o.png" width="15" alt="O"> - Wins :
+      <br><span>{{winningCount.oWins}}</span>
+    </p>
+    <p class="stats">Draw : <br><span>{{winningCount.draw}}</span></p>
+    <p class="stats" (click)="viewStats()"><b>View<br>Stats</b></p>
+  </div>
+  <div class="link">
+    <a href="https://coderman401.web.app/demos" target="blank">Visit here for more... </a>
+  </div>
+
+</div>

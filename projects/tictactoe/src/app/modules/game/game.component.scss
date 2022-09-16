@@ -1,0 +1,92 @@
+.game {
+  background: #fff url("/assets/images/bg.png");
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  .board {
+    margin: 1.6rem 0;
+    border-radius: 0.4rem;
+    background-color: #cfc8b8;
+    border: 1rem solid #cfc8b8;
+    box-shadow: 0rem 0rem 2.5rem 0rem rgba(0, 0, 0, 0.75);
+  }
+
+  .select-player {
+    display: flex;
+    padding: 0.8rem;
+    justify-content: center;
+    .radio {
+      display: block;
+      position: relative;
+      padding-left: 3.5rem;
+      padding-right: 2rem;
+      margin-bottom: 1.2rem;
+      cursor: pointer;
+      font-size: 2.2rem;
+    }
+  }
+  .single-info {
+    padding: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    label {
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 0rem 1rem;
+    }
+    img {
+      vertical-align: middle;
+    }
+  }
+  .create-game,
+  .join-game {
+    label {
+      font-weight: bold;
+      margin-bottom: 0.4rem;
+    }
+    .form-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      mat-form-field {
+        margin-right: 0.8rem;
+        flex: 1;
+      }
+      button {
+        margin-bottom: 2.2rem;
+        margin-left: 0.8rem;
+      }
+    }
+  }
+
+  .game-stats {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem;
+    .stats {
+      margin: 0.8rem;
+      text-align: center;
+    }
+    .stats span {
+      font-size: 2rem;
+      font-weight: bold;
+    }
+    img {
+      vertical-align: middle;
+    }
+    p:last-child {
+      cursor: pointer;
+    }
+  }
+}
+.link {
+  a {
+    font-size: 1.6rem;
+    color: #00bcd4;
+  }
+}

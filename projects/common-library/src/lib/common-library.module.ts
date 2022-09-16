@@ -1,5 +1,6 @@
 // modules
 import { ModuleWithProviders, NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FirebaseOptions, initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { FIREBASE_OPTIONS } from '@angular/fire/compat';
@@ -8,6 +9,7 @@ import { MaterialModule } from './modules';
 import { ScreenTrackingService, UserTrackingService } from '@angular/fire/analytics';
 import { FirebaseDatabaseService, FirebaseFirestoreService, FirebaseStorageService } from './services';
 // components
+import { AlertComponent } from './components/alert/alert.component';
 import { MainHeaderComponent } from './components/main-header/main-header.component';
 import { MainFooterComponent } from './components/main-footer/main-footer.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
@@ -17,12 +19,14 @@ import { PageNotFoundComponent } from './components/page-not-found/page-not-foun
   declarations: [
     MainHeaderComponent,
     MainFooterComponent,
-    PageNotFoundComponent
+    PageNotFoundComponent,
+    AlertComponent
   ],
   imports: [
+    CommonModule,
     MaterialModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   providers: [
     ScreenTrackingService, UserTrackingService
@@ -32,7 +36,9 @@ import { PageNotFoundComponent } from './components/page-not-found/page-not-foun
     MainHeaderComponent,
     MainFooterComponent,
     PageNotFoundComponent,
+    AlertComponent,
     // modules
+    CommonModule,
     MaterialModule,
     FormsModule,
     ReactiveFormsModule
