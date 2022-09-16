@@ -9,3 +9,4 @@ export * from './theme.service';
 export * from './firebase/firebase-database.service';
 export * from './firebase/firebase-firestore.service';
 export * from './firebase/firebase-storage.service';
+export * from './injectable-tokens';

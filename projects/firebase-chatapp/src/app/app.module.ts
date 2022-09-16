@@ -2,11 +2,13 @@
 import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { BrowserModule } from '@angular/platform-browser';
-import { FIREBASE_OPTIONS } from '@angular/fire/compat';
-// providers
-import { environment } from '../environments/environment';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { CommonFirebaseAppModule, CommonLibraryModule } from 'common-library';
+import { DEBUG_MODE } from '@angular/fire/compat/analytics';
+// components
 import { AppComponent } from './app.component';
-import { CommonLibraryModule } from 'common-library';
+// configs
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [
@@ -15,11 +17,14 @@ import { CommonLibraryModule } from 'common-library';
   imports: [
     BrowserModule,
     AppRoutingModule,
+    BrowserAnimationsModule,
     CommonLibraryModule,
+    CommonFirebaseAppModule.init(),
   ],
   providers: [
-    { provide: FIREBASE_OPTIONS, useValue: environment.firebase }
+    { provide: DEBUG_MODE, useValue: !environment.production },
   ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+

@@ -5,9 +5,7 @@ import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { CommonActionService } from '../common-action.service';
 import { CryptoService } from '../crypto.service';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class FirebaseDatabaseService {
 
   encKey = 'coderman401';

@@ -1,0 +1,71 @@
+<div class="container">
+
+  <mat-card class="login-card" *ngIf="isLogin">
+    <div class="header-logo">
+      <img src="assets/images/logo.png" />
+      <mat-card-title>Login to ChatApp</mat-card-title>
+    </div>
+    <mat-card-content>
+      <form [formGroup]="loginForm" (ngSubmit)="login()" novalidate>
+        <mat-form-field appearance="outline">
+          <mat-label>Username</mat-label>
+          <input matInput placeholder="Username" formControlName="username" />
+          <mat-error *ngIf="fL['username']?.errors?.['required']">Username is required</mat-error>
+          <mat-error *ngIf="fL['username']?.errors?.['maxlength']">Max Length is 6
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <input matInput placeholder="Password" type="password" formControlName="password" />
+          <mat-error>Password is required</mat-error>
+        </mat-form-field>
+        <button mat-raised-button [disabled]="isProgress" [class.white-spinner]="isProgress"
+          color="primary">Login</button>
+      </form>
+      <div class="action">
+        <p>Don't have account, <span (click)="toggleLogin()">Signup Here</span></p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+
+  <mat-card class="login-card" *ngIf="!isLogin">
+    <div class="header-logo">
+      <img src="assets/images/logo.png" />
+      <mat-card-title>Signup to ChatApp</mat-card-title>
+    </div>
+    <mat-card-content>
+      <form [formGroup]="signupForm" novalidate (ngSubmit)="signup()">
+        <div>
+          <mat-form-field appearance="outline">
+            <mat-label>FirstName</mat-label>
+            <input matInput placeholder="FirstName" formControlName="firstName" />
+            <mat-error>FirstName is required</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>LastName</mat-label>
+            <input matInput placeholder="LastName" formControlName="lastName" />
+          </mat-form-field>
+        </div>
+        <mat-form-field appearance="outline">
+          <mat-label>Username</mat-label>
+          <input matInput placeholder="Username" formControlName="username" />
+          <mat-error *ngIf="fS['username']?.errors?.['required']">Username is required</mat-error>
+          <mat-error *ngIf="fS['username']?.errors && fS['username']?.errors?.['maxlength']">Max Length is 6
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <input matInput placeholder="Password" type="password" formControlName="password" />
+          <mat-error>Password is required</mat-error>
+        </mat-form-field>
+        <button mat-raised-button [disabled]="isProgress" [class.white-spinner]="isProgress"
+          color="primary">Signup</button>
+      </form>
+      <div class="action">
+        <p>Already have account, <span (click)="toggleLogin()">Login Here</span></p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+</div>

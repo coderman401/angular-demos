@@ -2,10 +2,7 @@
 import { Injectable } from '@angular/core';
 import { map } from 'rxjs/operators';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class FirebaseFirestoreService {
   constructor(
     private afs: AngularFirestore) { }

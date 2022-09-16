@@ -7,6 +7,9 @@
       "hosting": {
         "tictactoe-angular-coderman401": [
           "tictactoe-angular-coderman401"
+        ],
+        "chatapp-angular-coderman401": [
+          "chatapp-angular-coderman401"
         ]
       }
     }

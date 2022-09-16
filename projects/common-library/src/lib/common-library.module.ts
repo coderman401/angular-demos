@@ -1,21 +1,22 @@
 // modules
-import { NgModule } from '@angular/core';
+import { ModuleWithProviders, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import { provideAuth, getAuth } from '@angular/fire/auth';
-import { provideDatabase, getDatabase } from '@angular/fire/database';
-import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
+import { provideDatabase, getDatabase } from "@angular/fire/database";
+import { provideFirestore, getFirestore } from "@angular/fire/firestore";
+import { FIREBASE_OPTIONS } from '@angular/fire/compat';
 import { MaterialModule } from './modules';
 // providers
-import { provideAnalytics, getAnalytics, ScreenTrackingService, UserTrackingService } from '@angular/fire/analytics';
-// configs
-import { FIREBASE_CONFIG } from './common.config';
+import { provideAnalytics, getAnalytics, ScreenTrackingService, UserTrackingService } from "@angular/fire/analytics";
+import { FirebaseDatabaseService, FirebaseFirestoreService, FirebaseStorageService } from "./services";
 // components
 import { AlertComponent } from './components/alert/alert.component';
 import { MainHeaderComponent } from './components/main-header/main-header.component';
 import { MainFooterComponent } from './components/main-footer/main-footer.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
+// config
+import { FIREBASE_CONFIG } from './firebase.config';
 
 
 @NgModule({
@@ -26,18 +27,13 @@ import { PageNotFoundComponent } from './components/page-not-found/page-not-foun
     AlertComponent
   ],
   imports: [
-    provideFirebaseApp(() => initializeApp(FIREBASE_CONFIG)),
-    provideAnalytics(() => getAnalytics()),
-    provideAuth(() => getAuth()),
-    provideDatabase(() => getDatabase()),
-    provideFirestore(() => getFirestore()),
     CommonModule,
     MaterialModule,
     FormsModule,
     ReactiveFormsModule,
   ],
   providers: [
-    ScreenTrackingService, UserTrackingService
+    ScreenTrackingService
   ],
   exports: [
     // components
@@ -49,7 +45,33 @@ import { PageNotFoundComponent } from './components/page-not-found/page-not-foun
     CommonModule,
     MaterialModule,
     FormsModule,
-    ReactiveFormsModule,
+    ReactiveFormsModule
   ]
 })
 export class CommonLibraryModule { }
+
+@NgModule({
+  imports: [
+    provideFirebaseApp(() => initializeApp(FIREBASE_CONFIG)),
+    provideAnalytics(() => getAnalytics()),
+    provideDatabase(() => getDatabase()),
+    provideFirestore(() => getFirestore())
+  ],
+})
+export class CommonFirebaseAppModule {
+  static init(): ModuleWithProviders<CommonFirebaseAppModule> {
+    return {
+      ngModule: CommonFirebaseAppModule,
+      providers: [
+        {
+          provide: FIREBASE_OPTIONS,
+          useValue: FIREBASE_CONFIG
+        },
+        FirebaseDatabaseService,
+        FirebaseFirestoreService,
+        FirebaseStorageService,
+        ScreenTrackingService
+      ]
+    }
+  }
+}
