@@ -19,7 +19,7 @@ jobs:
           node-version: "14"
       - run: npm install && node setEnv.ts --project=chatapp
         env:
-          FIREBASE: "${{ secrets.FIREBASE_CHATAPP }}"
+          FIREBASE_CHATAPP: "${{ secrets.FIREBASE_CHATAPP }}"
       - run: npm install && npm run build-lib && npm run build-chatapp
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
