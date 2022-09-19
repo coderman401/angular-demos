@@ -8,11 +8,13 @@ name: Deploy Image Editor
       - main
     paths:
       - "projects/image-editor/**"
+      - "projects/common-library"
   pull_request:
     branches:
       - main
     paths:
       - "projects/image-editor/**"
+      - "projects/common-library"
 
 jobs:
   build_and_deploy:

@@ -8,11 +8,13 @@ name: Deploy Chatapp
       - main
     paths:
       - "projects/firebase-chatapp/**"
+      - "projects/common-library"
   pull_request:
     branches:
       - main
     paths:
       - "projects/firebase-chatapp/**"
+      - "projects/common-library"
 
 jobs:
   build_and_deploy:
