@@ -32,7 +32,7 @@ $theme: mat.define-light-theme(
       ),
     )
   );
-  @include mat.all-component-themes($theme);
+  @include mat.all-component-colors($theme);
 
   color: var(--color-primary-text) !important;
   pre {
