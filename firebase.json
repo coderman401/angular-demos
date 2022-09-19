@@ -34,7 +34,7 @@
       ]
     },
     {
-      "target": "image-editor-angular-coderman401",
+      "target": "imageeditor-angular-coderman401",
       "public": "dist/image-editor",
       "ignore": [
         "**/.*"
