@@ -1,1 +1,13 @@
 @use "../../../dist/common-library/styles/index.scss";
+
+.mat-form-field {
+  .mat-form-field-infix {
+    padding: 1rem 0 !important;
+  }
+  .mat-form-field-suffix {
+    top: -0.4rem !important;
+  }
+  .mat-form-field-wrapper {
+    padding-bottom: 0.4rem !important;
+  }
+}

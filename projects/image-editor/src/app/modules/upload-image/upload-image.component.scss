@@ -1,0 +1,15 @@
+.upload-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  .select-card {
+    width: 100%;
+    text-align: center;
+    max-width: 32.8rem;
+    &__header {
+      justify-content: center;
+      align-items: center;
+    }
+  }
+}

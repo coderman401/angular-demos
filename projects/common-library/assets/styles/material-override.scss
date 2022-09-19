@@ -1,67 +1,90 @@
 .mat-toolbar,
 .mat-toolbar-multiple-rows {
-    min-height: 5.6rem !important;
-    font-size: 1.4rem !important;
+  min-height: 5.6rem !important;
+  font-size: 1.4rem !important;
 }
 
 .mat-toolbar-row,
 .mat-toolbar-single-row {
-    min-height: 5.6rem !important;
-    height: 5.6rem !important;
+  min-height: 5.6rem !important;
+  height: 5.6rem !important;
 }
 
 .mat-toolbar-row a,
 .mat-toolbar-single-row a {
-    font-size: 1.4rem;
+  font-size: 1.4rem;
 }
 
-.mat-list-base
-.mat-list-item {
-    font-size: 1.4rem;
+.mat-list-base .mat-list-item {
+  font-size: 1.4rem;
 }
 * {
-    font-family: 'Saira Condensed', 'sans-serif';
-    &:focus {
-        outline: none;
-    }
+  font-family: "Saira Condensed", "sans-serif";
+  &:focus {
+    outline: none;
+  }
 }
 .material-icons {
-    font-family: 'Material Icons' !important;
+  font-family: "Material Icons" !important;
 }
 
 .tech-logos {
-    &:focus {
-        outline: none;
-    }
+  &:focus {
+    outline: none;
+  }
 }
 
 .tech-logos:hover {
-    .angular {
-        svg {
-            path {
-                fill: var(--color-primary-light);
-            }
-            path:first-child, path:nth-child(2) {
-                fill: var(--color-secondary);
-            }
-        }
-    }
-    .firebase {
-        svg {
-            path, circle {
-                fill: rgba(var(--color-secondary-rgb), 0.5);
-                &.lol {
-                    fill: var(--color-secondary);
-                }
-            }
-        }
-    }
-    mat-card-title {
-        color: var(--color-secondary);
-    }
+  .angular {
     svg {
-        path, circle {
-            fill: var(--color-secondary);
-        }
+      path {
+        fill: var(--color-primary-light);
+      }
+      path:first-child,
+      path:nth-child(2) {
+        fill: var(--color-secondary);
+      }
     }
+  }
+  .firebase {
+    svg {
+      path,
+      circle {
+        fill: rgba(var(--color-secondary-rgb), 0.5);
+        &.lol {
+          fill: var(--color-secondary);
+        }
+      }
+    }
+  }
+  mat-card-title {
+    color: var(--color-secondary);
+  }
+  svg {
+    path,
+    circle {
+      fill: var(--color-secondary);
+    }
+  }
+}
+
+main-header {
+  box-shadow: 0 0.3rem 0.5rem -0.1rem rgb(0 0 0 / 20%), 0 1.08rem 1rem 0 rgb(0 0 0 / 14%),
+    0 0.1rem 1.8rem 0 rgb(0 0 0 / 14%);
+  z-index: 99;
+  position: sticky;
+  top: 0;
+}
+
+app-secondary-header {
+  z-index: 1;
+}
+
+.mat-form-field {
+  .mat-form-field-infix {
+    padding: 1rem 0 !important;
+  }
+  .mat-form-field-suffix {
+    top: -0.4rem !important;
+  }
 }

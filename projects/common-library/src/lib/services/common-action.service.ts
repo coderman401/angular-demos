@@ -32,7 +32,7 @@ export class CommonActionService {
 
   // redirect to home page
   redirectToHome() {
-    this.router.navigate(['/home']);
+    this.router.navigate(['/']);
   }
   // redirect to login page
   redirectToAuth() {
@@ -44,10 +44,11 @@ export class CommonActionService {
     return Promise.resolve();
   }
 
-  redirectToPath(path: string, queryParams: any = null) {
-    if (queryParams) {
+  redirectToPath(path: string, queryParams: any = null, state: any = null) {
+    if (queryParams || state) {
       const navigationExtras: NavigationExtras = {
-        queryParams
+        queryParams,
+        state
       };
       this.router.navigate([path], navigationExtras);
     } else {
@@ -72,7 +73,7 @@ export class CommonActionService {
   generateUniqueId() {
     let unique = '';
     const random = Math.random();
-    unique = random.toString(36).substr(2, 8);
+    unique = random.toString(36).split('').splice(2, 8).join('');
 
     return unique;
   }

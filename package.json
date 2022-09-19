@@ -9,8 +9,10 @@
     "build-lib": "ng build common-library --configuration production",
     "build-tictactoe": "ng build tictactoe --configuration production",
     "build-chatapp": "ng build firebase-chatapp --configuration production",
+    "build-editor": "ng build image-editor --configuration production",
     "serve-tictactoe": "ng serve tictactoe",
     "serve-chatapp": "ng serve firebase-chatapp",
+    "serve-editor": "ng serve image-editor",
     "test": "ng test"
   },
   "private": true,
@@ -27,6 +29,7 @@
     "@angular/platform-browser-dynamic": "^14.0.0",
     "@angular/router": "^14.0.0",
     "crypto-js": "^4.1.1",
+    "ngx-image-cropper": "^6.2.2",
     "ngx-socket-io": "^3.2.0",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",

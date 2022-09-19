@@ -1,0 +1,7 @@
+<div class="filter-container" (click)="clickOnFilter()">
+  <div class="image-container" [class.is-selected]="selected">
+    <img [src]="src" [ngStyle]="{'filter': filter.style}" />
+  </div>
+  <mat-icon class="centered" *ngIf="selected">done_all</mat-icon>
+  <p>{{ filter?.name }}</p>
+</div>

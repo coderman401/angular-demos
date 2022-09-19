@@ -1,0 +1,21 @@
+<ng-container *ngIf="type === 'icon-only'">
+  <button [class]="className" [disabled]="disable" [color]="color" mat-icon-button (click)="click()"
+    attr.aria-label="{{ariaLabel}}">
+    <mat-icon>{{ icon }}</mat-icon>
+  </button>
+</ng-container>
+
+<ng-container *ngIf="type === 'icon-with-text'">
+  <button [class]="className" [disabled]="disable" [color]="color" mat-raised-button (click)="click()"
+    attr.aria-label="{{ariaLabel}}">
+    <mat-icon>{{ icon }}</mat-icon>
+    {{ text }}
+  </button>
+</ng-container>
+
+<ng-container *ngIf="type === 'text-only'">
+  <button [class]="className" [disabled]="disable" [color]="color" mat-button (click)="click()"
+    attr.aria-label="{{ariaLabel}}">
+    {{ text }}
+  </button>
+</ng-container>
