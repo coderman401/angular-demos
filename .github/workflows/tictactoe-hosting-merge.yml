@@ -6,15 +6,13 @@ name: Deploy TicTacToe
   push:
     branches:
       - main
-    path:
+    paths:
       - "tictactoe/**"
-      - "tictactoe-hosting-merge.yml"
   pull_request:
     branches:
       - main
-    path:
+    paths:
       - "tictactoe/**"
-      - "tictactoe-hosting-merge.yml"
 
 jobs:
   build_and_deploy:
