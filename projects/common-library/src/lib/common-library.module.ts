@@ -12,7 +12,9 @@ import { provideAnalytics, getAnalytics, ScreenTrackingService, UserTrackingServ
 import { FirebaseDatabaseService, FirebaseFirestoreService, FirebaseStorageService } from "./services";
 // components
 import { AlertComponent } from './components/alert/alert.component';
+import { ButtonComponent } from './components/button/button.component';
 import { MainHeaderComponent } from './components/main-header/main-header.component';
+import { SecondaryHeaderComponent } from './components/secondary-header/secondary-header.component';
 import { MainFooterComponent } from './components/main-footer/main-footer.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 // config
@@ -23,8 +25,10 @@ import { FIREBASE_CONFIG } from './firebase.config';
   declarations: [
     MainHeaderComponent,
     MainFooterComponent,
+    SecondaryHeaderComponent,
     PageNotFoundComponent,
-    AlertComponent
+    AlertComponent,
+    ButtonComponent,
   ],
   imports: [
     CommonModule,
@@ -39,8 +43,10 @@ import { FIREBASE_CONFIG } from './firebase.config';
     // components
     MainHeaderComponent,
     MainFooterComponent,
+    SecondaryHeaderComponent,
     PageNotFoundComponent,
     AlertComponent,
+    ButtonComponent,
     // modules
     CommonModule,
     MaterialModule,

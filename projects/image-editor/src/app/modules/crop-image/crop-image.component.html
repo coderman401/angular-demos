@@ -1,0 +1,70 @@
+<div class="cropper">
+  <mat-card class="cropper__card">
+    <ng-container *ngIf="showCropper">
+      <div class="button-list">
+        <app-button type="icon-only" icon="zoom_in" (buttonClick)="zoomIn()" matTooltip="Zoom In" ariaLabel="Zoom In">
+        </app-button>
+        <app-button type="icon-only" icon="zoom_out" (buttonClick)="zoomOut()" matTooltip="Zoom Out"
+          ariaLabel="Zoom Out">
+        </app-button>
+        <app-button type="icon-only" icon="rotate_left" (buttonClick)="rotateLeft()" matTooltip="Rotate Left"
+          ariaLabel="Rotate Left">
+        </app-button>
+        <app-button type="icon-only" icon="rotate_right" (buttonClick)="rotateRight()" matTooltip="Rotate Right"
+          ariaLabel="Rotate Right">
+        </app-button>
+        <app-button type="icon-only" icon="aspect_ratio" (buttonClick)="toggleContainWithinAspectRatio()"
+          *ngIf="cropperConfig.containWithinAspectRatio" matTooltip="Fill Aspect Ratio" ariaLabel="Fill Aspect Ratio">
+        </app-button>
+        <app-button type="icon-only" icon="filter_center_focus" (buttonClick)="toggleContainWithinAspectRatio()"
+          *ngIf="!cropperConfig.containWithinAspectRatio" matTooltip="Contain Within Aspect Ratio"
+          ariaLabel="Contain Within Aspect Ratio">
+        </app-button>
+        <app-button type="icon-only" icon="clear" (buttonClick)="resetImage()" matTooltip="Clear" ariaLabel="Clear">
+        </app-button>
+        <app-button [matMenuTriggerFor]="menu" type="text-only" [text]="aspectRatio" matTooltip="Aspect Ratio"
+          ariaLabel="Aspect Ratio" style="line-height: 4rem;">
+        </app-button>
+        <mat-menu #menu="matMenu">
+          <button *ngFor="let ratio of aspectRatios" mat-menu-item (click)="setAspectRatio(ratio)">{{ ratio }}</button>
+        </mat-menu>
+      </div>
+
+      <div class="actions">
+        <mat-form-field appearance="outline" color="primary">
+          <mat-label>Rotate</mat-label>
+          <input matInput type="number" autocomplete="off" placeholder="Rotation" [(ngModel)]="cropperConfig.rotation"
+            (input)="updateRotation()">
+          <span matSuffix>Deg</span>
+        </mat-form-field>
+      </div>
+    </ng-container>
+
+    <div class="image" *ngIf="cropperConfig?.imageBase64">
+
+      <mat-spinner class="loader" strokeWidth="4" diameter="64" *ngIf="!showCropper"></mat-spinner>
+
+      <image-cropper [imageBase64]="cropperConfig.imageBase64" [maintainAspectRatio]="cropperConfig.maintainAspectRatio"
+        [containWithinAspectRatio]="cropperConfig.containWithinAspectRatio" [aspectRatio]="cropperConfig.aspectRatio"
+        [onlyScaleDown]="cropperConfig.onlyScaleDown" [roundCropper]="false"
+        [canvasRotation]="cropperConfig.canvasRotation" [transform]="cropperConfig.transform"
+        [format]="cropperConfig.format" [alignImage]="cropperConfig.alignImage" [style.opacity]="showCropper ? 1 : 0"
+        (imageCropped)="imageCropped($event)" (cropperReady)="cropperReady($event)"
+        (loadImageFailed)="loadImageFailed()">
+      </image-cropper>
+    </div>
+
+    <div class="actions" *ngIf="showCropper">
+      <app-button type="icon-with-text" icon="arrow_back" text="Back" ariaLabel="Go back to select image."
+        (buttonClick)="goBack()">
+      </app-button>
+
+      <app-button type="icon-with-text" icon="crop" text="Crop & Next" ariaLabel="Crop & Next to filters"
+        (buttonClick)="saveCroppedImage()">
+      </app-button>
+      <app-button type="icon-with-text" icon="skip_next" text="Skip" ariaLabel="Skip to filters"
+        (buttonClick)="skipToFilters()">
+      </app-button>
+    </div>
+  </mat-card>
+</div>

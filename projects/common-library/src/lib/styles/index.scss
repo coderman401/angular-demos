@@ -112,17 +112,19 @@ h5 {
 // custom scrollbar
 /* width */
 ::-webkit-scrollbar {
-  width: 0.8rem;
+  width: 0.6rem;
+  height: 0.6rem;
 }
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  border-radius: 0.4rem;
+  background: rgba(128, 128, 128, 0.2);
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  border-radius: 0.4rem;
+  border-radius: 0.8rem;
   background: rgba(var(--color-primary-rgb), 0.4);
 }
 

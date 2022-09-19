@@ -1,0 +1,74 @@
+<div class="filters">
+  <mat-card class="filters__card">
+
+    <div id="addFilter" [ngClass]="currentFilter.name">
+      <img *ngIf="!isWatermark" [src]="imageChanged" />
+    </div>
+    <div id="addCanvasWatermark" *ngIf="isWatermark"></div>
+
+    <div class="scrolling-wrapper">
+      <ul class="scroll-horizontal">
+        <li class="card-filter" *ngFor="let filter of filters; let i = index;">
+          <app-filter-list [src]="imageChanged" [selected]="selected === i" [filter]="filter"
+            (applyFilter)="applyFilter($event)"></app-filter-list>
+        </li>
+      </ul>
+    </div>
+
+    <div class="actions">
+      <app-button [type]="'icon-with-text'" [icon]="'arrow_back'" [text]="'back'" (buttonClick)="goBack()">
+      </app-button>
+      <app-button [type]="'icon-with-text'" [icon]="'save_alt'" [text]="'save'" (buttonClick)="saveImage()">
+      </app-button>
+    </div>
+  </mat-card>
+
+  <mat-card class="filters__card">
+    <div class="filer-name-wrapper" *ngIf="currentFilter?.name?.length">
+      <mat-label>Filter: </mat-label>
+      <mat-label class="filter-name">{{currentFilter.name }}</mat-label>
+    </div>
+
+    <ng-container *ngFor="let item of filterParamsList">
+      <div class="filter-slider-wrapper">
+        <mat-label>{{item?.param}}</mat-label>
+        <mat-slider color="primary" (change)="onInputChange($event, item.param)" [max]="item.max" [min]="item.min"
+          [thumbLabel]="true" [(ngModel)]="filterParams[item.param]">
+        </mat-slider>
+        <mat-label>{{ filterParams[item.param] }}</mat-label>
+      </div>
+    </ng-container>
+
+    <div class="watermark">
+      <mat-checkbox (change)="addRemoveWatermark($event)" class="mat-padding" color="primary" [(ngModel)]="isWatermark">
+        Watermark</mat-checkbox>
+      <ng-container *ngIf="isWatermark">
+        <div class="form-group">
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Watermark</mat-label>
+            <input (keyup)="changeWatermark($event)" matInput placeholder="add watermark" [(ngModel)]="watermarkText" />
+          </mat-form-field>
+        </div>
+        <div class="form-group">
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Text Color</mat-label>
+            <input (change)="changeWatermark($event)" type="color" matInput placeholder="color"
+              [(ngModel)]="watermarkColor" />
+          </mat-form-field>
+        </div>
+        <div class="form-group">
+          <mat-form-field appearance="outline" class="half">
+            <mat-label>Text Size</mat-label>
+            <input (change)="changeWatermark($event)" type="number" min="0" max="50" matInput placeholder="aplha(opacity)"
+              [(ngModel)]="watermarkTextSize" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="half">
+            <mat-label>Text Opacity</mat-label>
+            <input (change)="changeWatermark($event)" type="number" min="0" max="1" matInput
+              placeholder="aplha(opacity)" [(ngModel)]="watermarkAlpha" />
+          </mat-form-field>
+        </div>
+      </ng-container>
+    </div>
+  </mat-card>
+</div>

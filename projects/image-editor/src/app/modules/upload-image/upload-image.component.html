@@ -1,0 +1,14 @@
+<div class="upload-image">
+  <mat-card class="select-card">
+    <mat-card-header class="select-card__header">
+      <mat-card-title class="title">Select an Image to continue.</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="select-card__content">
+
+      <app-button type="icon-with-text" icon="image" text="Select Image" ariaLabel="Select an image to upload"
+        (buttonClick)="selectImage?.click()">
+      </app-button>
+      <input #selectImage type="file" (change)="selectInputEvent($event)" accept="image/*" hidden>
+    </mat-card-content>
+  </mat-card>
+</div>
