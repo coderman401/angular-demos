@@ -1,0 +1,27 @@
+<div class="contacts-wrapper">
+  <div class="sticky-header">
+    <mat-toolbar>
+      <mat-toolbar-row>
+        <h1 style="width: 100%;">Welcome Kishan!</h1>
+        <button mat-icon-button>
+          <mat-icon>more_vert</mat-icon>
+        </button>
+      </mat-toolbar-row>
+    </mat-toolbar>
+  </div>
+
+  <div class="list">
+    <mat-selection-list #shoes [multiple]="false" (selectionChange)="selectContact($event)">
+      <ng-container *ngFor="let user of chatService.contactList">
+        <mat-list-option [value]="user?.userId" [selected]="user?.userId === chatService.selectedContact?.userId">
+          <div class="user-avatar" mat-list-avatar>{{user?.initials}}</div>
+          <div mat-line>{{user.name}}</div>
+          <!-- <div mat-line> {{user.updated | date}} </div> -->
+        </mat-list-option>
+        <mat-divider></mat-divider>
+      </ng-container>
+    </mat-selection-list>
+    <mat-list>
+    </mat-list>
+  </div>
+</div>

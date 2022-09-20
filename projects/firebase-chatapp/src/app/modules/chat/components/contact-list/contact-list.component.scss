@@ -1,0 +1,18 @@
+.contacts-wrapper {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  .sticky-header {
+    position: sticky;
+    top: 0;
+  }
+  .list {
+    overflow-y: auto;
+    max-height: 100%;
+    height: calc(100% - 5.6rem);
+    mat-list {
+      margin: 0.8rem 0;
+    }
+  }
+
+}

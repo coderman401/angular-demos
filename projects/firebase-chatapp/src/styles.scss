@@ -1,1 +1,18 @@
 @use "../../../dist/common-library/styles/index.scss";
+:root {
+  --color-chat-background: #ededed;
+  --color-message-background: #66d7e5;
+}
+.dark-theme {
+  --color-chat-background: var(--color-background);
+  --color-message-background: #00717f;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(var(--color-primary-rgb), 0.16);
+  line-height: 40px;
+  text-align: center;
+}
