@@ -1,4 +1,5 @@
 import { Component, ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import { ChatService } from '../../services/chat.service';
 
 @Component({
   selector: 'app-chat-footer',
@@ -11,14 +12,14 @@ export class ChatFooterComponent implements OnInit {
   @Output() send = new EventEmitter();
   @ViewChild('textBox', { static: true }) textBox!: ElementRef;
 
-  constructor() { }
+  constructor(private chatService: ChatService) { }
 
   ngOnInit(): void {
   }
 
   sendMessage() {
     if (this.message.trim() !== '' || this.message.trim().length !== 0) {
-      this.send.emit(this.message.trim());
+      this.chatService.sendMessage(this.message.trim());
     }
     this.message = '';
     this.resize();

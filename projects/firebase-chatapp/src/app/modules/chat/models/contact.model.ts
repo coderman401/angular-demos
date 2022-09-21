@@ -2,9 +2,11 @@ export interface Contact {
   name: string;
   email: string;
   userId: string;
-  active: boolean;
-  online: boolean;
+  emailVerified: boolean;
   profileImage?: string;
+  metadata: any;
+  active?: boolean;
+  online?: boolean;
   initials?: string;
   hasMessages?: boolean;
 }

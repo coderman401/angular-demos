@@ -84,7 +84,27 @@ app-secondary-header {
   .mat-form-field-infix {
     padding: 1rem 0 !important;
   }
-  .mat-form-field-suffix {
-    top: -0.4rem !important;
+  &.mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float,
+  &.mat-form-field-appearance-outline.mat-form-field-can-float .mat-input-server:focus + .mat-form-field-label-wrapper {
+    .mat-form-field-label {
+      transform: translateY(-20px) scale(0.75);
+      width: 133.3333333333%;
+    }
+  }
+  &.mat-form-field-appearance-outline .mat-form-field-label {
+    top: 20px;
+    margin-top: 0;
+  }
+  // .mat-form-field-suffix {
+  //   top: -0.4rem !important;
+  // }
+  mat-error {
+    font-size: 12px;
+  }
+  input {
+    font-size: 16px;
+  }
+  .mat-form-field-wrapper {
+    margin: 0.4rem 0;
   }
 }

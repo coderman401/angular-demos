@@ -14,6 +14,7 @@ export class CommonActionService {
   private _isMobile = false;
   private _dbName = '';
   private _detectChanges = false;
+  private _clientInfo: any;
 
   constructor(
     private location: Location,
@@ -29,6 +30,9 @@ export class CommonActionService {
 
   get detectChanges() { return this._detectChanges; }
   set detectChanges(value) { this._detectChanges = value; }
+
+  get clientInfo(): any { return this._clientInfo; }
+  set clientInfo(value: any) { this._clientInfo = value; }
 
   // redirect to home page
   redirectToHome() {

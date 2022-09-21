@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { user } from '@angular/fire/auth';
 import { MatSelectionListChange } from '@angular/material/list';
+import { AuthService } from '../../../auth/services/auth.service';
 import { Contact } from '../../models/contact.model';
 import { ChatService } from '../../services/chat.service';
 
@@ -11,10 +12,9 @@ import { ChatService } from '../../services/chat.service';
 })
 export class ContactListComponent implements OnInit {
 
-  constructor(public chatService: ChatService) { }
+  constructor(public chatService: ChatService, private authService: AuthService) { }
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
   selectContact(event: MatSelectionListChange) {
     const userId = event.options[0]?.value;
@@ -24,5 +24,9 @@ export class ContactListComponent implements OnInit {
         this.chatService.selectedContact = contact;
       }
     }
+  }
+
+  logout() {
+    this.authService.logout();
   }
 }

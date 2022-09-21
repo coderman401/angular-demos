@@ -1,6 +1,9 @@
 import { Injectable } from "@angular/core";
+import { FirebaseDatabaseService, FirebaseFirestoreService } from "common-library";
 import { BehaviorSubject, Observable } from "rxjs";
 import { Contact } from "../models/contact.model";
+import { map } from 'rxjs/operators';
+import { Message } from "../models/message.model";
 
 @Injectable({
   providedIn: 'root'
@@ -11,8 +14,10 @@ export class ChatService {
 
   private _selectedContact = new BehaviorSubject<Contact | null>(null);
   private _contactList: Contact[] = [];
+  private _currentUser!: Contact;
+  private _loader = true;
 
-  constructor() {
+  constructor(private fireStoreService: FirebaseFirestoreService, private databaseService: FirebaseDatabaseService) {
     this.getContactList();
   }
 
@@ -23,16 +28,76 @@ export class ChatService {
   get selectedContact(): Contact | null { return this._selectedContact.getValue(); }
   get selectedContact$(): Observable<Contact | null> { return this._selectedContact.asObservable(); }
   set selectedContact(value: Contact | null) { if (value) this._selectedContact.next(value); }
+
+  get currentUser(): Contact { return this._currentUser; }
+  set currentUser(value: Contact) { this._currentUser = value; }
+
+  get loader(): boolean { return this._loader }
+  set loader(value: boolean) { this._loader = value; }
   //#endregion getter-setter
 
-  private getContactList() {
-    this.contactList = this.generateInitials(CONTACT_LIST);
-    this.selectedContact = this.contactList[0];
+
+  getContactList() {
+    // this.updateUserStatus();
+    this.fireStoreService.getValueChanges('users').subscribe((response: any[]) => {
+      let list = response.filter((s: any) => s.email !== this.currentUser.email)
+      this.contactList = this.generateInitials(list);
+      this.loader = false;
+      // if (!this.selectedContact?.email) {
+      //   this.selectedContact = this.contactList[0];
+      // }
+    });
+  }
+
+  getMessages(receiver: Contact) {
+    const chatId = this.generateChatId(receiver.userId);
+    return this.databaseService.getSnapshotChanges(`${chatId}/messages`).pipe(map((messages: Message[]) => {
+      this.loader = false;
+      return messages;
+    }));
+  }
+
+  sendMessage(message: string) {
+    if (this.selectedContact) {
+      const data: Message = new Message(
+        this.currentUser.userId,
+        this.selectedContact?.userId,
+        message,
+      );
+      const chatId = this.generateChatId(this.selectedContact.userId);
+      this.pushMessage(chatId, data);
+    }
+  }
+
+  updateUserStatus() {
+    this.updateOnlineStatus(this.currentUser.userId, 'online');
+  }
+
+  pushMessage(chatId: string, messageData: Message) {
+    return this.databaseService.createItemInDB(`${chatId}/messages`, messageData);
+  }
+
+  updateOnlineStatus(docId: string, status: string) {
+    return this.fireStoreService.updateItemInAFS('users', docId, { status });
+  }
+
+  private generateChatId(receiverId: string) {
+    let chatId = '';
+
+    const cUId = this.currentUser.userId.substring(2, 8);
+    const rUId = receiverId.substring(2, 8);
+
+    if (cUId <= rUId) {
+      chatId = `${cUId}-${rUId}`;
+    } else {
+      chatId = `${rUId}-${cUId}`;
+    }
+    return chatId;
   }
 
   private generateInitials(list: Contact[]) {
     return list.map((l) => {
-      const nameArr = l.name.split(' ');
+      const nameArr = l.name.split(' ').filter((n) => n);
       if (nameArr.length > 1) {
         l.initials = nameArr[0][0].toUpperCase() + nameArr[1][0].toUpperCase();
       } else {
@@ -43,77 +108,3 @@ export class ChatService {
   }
 
 }
-
-const CONTACT_LIST: Contact[] = [
-  {
-    "userId": "1",
-    "name": "LeanneGraham",
-    "email": "Sincere@april.biz",
-    "active": false,
-    "online": false,
-  },
-  {
-    "userId": "2",
-    "name": "Ervin Howell",
-    "email": "Shanna@melissa.tv",
-    "active": true,
-    "online": false,
-  },
-  {
-    "userId": "3",
-    "name": "Clementine Bauch",
-    "email": "Nathan@yesenia.net",
-    "active": false,
-    "online": false,
-  },
-  {
-    "userId": "4",
-    "name": "Patricia Lebsack",
-    "email": "Julianne.OConner@kory.org",
-    "active": false,
-    "online": false,
-  },
-  {
-    "userId": "5",
-    "name": "Chelsey Dietrich",
-    "email": "Lucio_Hettinger@annie.ca",
-    "active": false,
-    "online": false,
-  },
-  {
-    "userId": "6",
-    "name": "Mrs. Dennis Schulist",
-    "email": "Karley_Dach@jasper.info",
-    "active": false,
-    "online": false,
-  },
-  {
-    "userId": "7",
-    "name": "Kurtis Weissnat",
-    "email": "Telly.Hoeger@billy.biz",
-    "active": false,
-    "online": false,
-  },
-  {
-    "userId": "8",
-    "name": "Nicholas Runolfsdottir V",
-    "email": "Sherwood@rosamond.me",
-    "active": false,
-    "online": false,
-  },
-  {
-    "userId": "9",
-    "name": "Glenna Reichert",
-    "email": "Chaim_McDermott@dana.io",
-    "active": false,
-    "online": false,
-  },
-  {
-    "userId": "10",
-    "name": "Clementina DuBuque",
-    "email": "Rey.Padberg@karina.biz",
-    "active": false,
-    "online": false,
-  }
-];
-

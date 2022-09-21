@@ -2,10 +2,16 @@
   <div class="sticky-header">
     <mat-toolbar>
       <mat-toolbar-row>
-        <h1 style="width: 100%;">Welcome Kishan!</h1>
-        <button mat-icon-button>
+        <h1 style="width: 100%;">Welcome {{chatService.currentUser.name || 'User' }}!</h1>
+        <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="open options">
           <mat-icon>more_vert</mat-icon>
         </button>
+        <mat-menu #menu="matMenu" xPosition="before">
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>exit_to_app</mat-icon>
+            <span>Logout</span>
+          </button>
+        </mat-menu>
       </mat-toolbar-row>
     </mat-toolbar>
   </div>

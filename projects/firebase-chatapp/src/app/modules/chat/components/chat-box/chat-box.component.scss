@@ -23,6 +23,20 @@
       display: flex;
       position: relative;
       margin-bottom: 1rem;
+      &.top-border {
+        .chat-item {
+          border-radius: 0;
+          border-top-left-radius: 0.8rem;
+          border-top-right-radius: 0.8rem;
+        }
+      }
+      &.bottom-border {
+        .chat-item {
+          border-radius: 0;
+          border-bottom-left-radius: 0.8rem;
+          border-bottom-right-radius: 0.8rem;
+        }
+      }
 
       .chat-text {
         border-radius: 0.8rem;
@@ -57,7 +71,7 @@
       }
       .chat-item {
         max-width: calc(100% - 60rem);
-        min-width: 15rem
+        min-width: 15rem;
       }
     }
     // }

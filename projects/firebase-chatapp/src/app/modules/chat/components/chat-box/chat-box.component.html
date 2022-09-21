@@ -1,7 +1,22 @@
 <div class="box-wrapper">
   <div class="chat-list">
-    <!-- <div class="message-wrapper"> -->
-
+    <ng-container *ngFor="let message of messages; let i = index;">
+      <div class="chat-outer" [class.self]="message.senderId === chatService.currentUser.userId">
+        <div class="chat-item">
+          <div class="chat-text">
+            <div class="text-message">
+              <div>{{message?.content}}</div>
+              <div class="chat-time">{{ message?.timestamp | date: ' hh:mm a'}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="date" *ngIf="checkForHeader(i, message)">
+        <mat-card>{{message?.date }}</mat-card>
+      </p>
+    </ng-container>
+  </div>
+  <!-- <div class="chat-list">
     <div class="chat-outer self">
       <div class="chat-item">
         <div class="chat-text">
@@ -66,6 +81,5 @@
     <p class="date">
       <mat-card>19 September 2022</mat-card>
     </p>
-    <!-- </div> -->
-  </div>
+  </div> -->
 </div>

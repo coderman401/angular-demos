@@ -1,11 +1,33 @@
-<div class="chat-wrapper">
-
+<div class="chat-wrapper" *ngIf="!chatService.loader; else loader">
   <div class="contact-list">
     <app-contact-list></app-contact-list>
   </div>
-  <div class="chat-box">
+  <div class="chat-box" *ngIf="chatService?.selectedContact; else initialPage">
     <app-chat-header></app-chat-header>
     <app-chat-box></app-chat-box>
     <app-chat-footer></app-chat-footer>
   </div>
+  <ng-template #initialPage>
+    <div class="home-box">
+      <mat-card class="card-abt">
+        <img src="assets/images/logo.png" alt="" class="img-fluid rounded-circle img-thumbnail shadow-sm">
+        <p>Developed By:</p>
+        <h3>Kishan Panchal</h3>
+        <div class="social mb-0 list-inline">
+          <a href="https://instagram.com/coderman401/" target="_blank" class="social-link"><i
+              class="fab fa-instagram"></i></a>
+          <a href="https://twitter.com/coderman401" target="_blank" class="social-link"><i
+              class="fab fa-twitter"></i></a>
+          <a href="https://github.com/coderman401/" target="_blank" class="social-link"><i
+              class="fab fa-github"></i></a>
+          </div>
+          <p><a href="https://coderman401.web.app/demos" target="_blank">Visit here fore more.</a></p>
+      </mat-card>
+    </div>
+  </ng-template>
 </div>
+<ng-template #loader>
+  <div class="loader-wrapper">
+    <app-loader [title]="'Loading'" [message]="'<p>Fetching Contacts and downloading chats...</p>'"></app-loader>
+  </div>
+</ng-template>
