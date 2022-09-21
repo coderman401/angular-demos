@@ -8,5 +8,6 @@ export const environment = {
     messagingSenderId: '',
     measurementId: '',
   },
-  production: true
+  production: true,
+  ipURL: 'https://www.iplocate.io/api/lookup',
 };

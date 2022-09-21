@@ -12,7 +12,8 @@ export const environment = {
     messagingSenderId: '',
     measurementId: '',
   },
-  production: false
+  production: false,
+  ipURL: 'https://www.iplocate.io/api/lookup',
 };
 
 /*
