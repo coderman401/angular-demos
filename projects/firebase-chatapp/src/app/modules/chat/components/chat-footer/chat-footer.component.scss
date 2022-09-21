@@ -1,0 +1,43 @@
+.footer {
+  padding: 1.6rem;
+  height: auto;
+  z-index: 999;
+  background-color: var(--color-background-dark);
+  .form-group {
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    .form-field {
+      width: 100%;
+      flex: 1;
+      padding: 0.8rem;
+      border-radius: 1.2rem;
+      background-color: var(--color-dividers);
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      .message-container {
+        flex: 1;
+        font-size: 1.6rem;
+        line-height: 1.6rem;
+        height: 1.6rem;
+        color: var(--color-primary-text);
+        overflow: auto;
+        resize: none;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        padding: 0.8rem 1.6rem;
+        &:focus {
+          outline: none;
+          border: 0;
+          box-shadow: none;
+        }
+      }
+    }
+    button {
+      margin-left: 1.6rem;
+    }
+  }
+}

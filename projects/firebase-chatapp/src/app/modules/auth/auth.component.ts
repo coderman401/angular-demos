@@ -1,8 +1,13 @@
-import { AuthService } from './services/auth.service';
+// modules
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, Validators, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
+import firebase from 'firebase/compat/app';
+// services
+import { AuthService } from './services/auth.service';
 import { LocalStorageService } from 'common-library';
+// configs
+import { Contact } from '../chat/models/contact.model';
 
 @Component({
   selector: 'app-auth',
@@ -13,10 +18,13 @@ export class AuthComponent implements OnInit {
 
   // var
   isLogin = true;
-  submitted = false;
   loginForm!: FormGroup;
   signupForm!: FormGroup;
-  isProgress = false;
+  isLoading = false;
+  showPassword = false;
+  showVerification = false;
+  verificationSent = false;
+  user!: firebase.User;
 
   constructor(
     private authService: AuthService,
@@ -29,38 +37,33 @@ export class AuthComponent implements OnInit {
     this.setLoginFormControl();
     this.setSignupFormControl();
   }
-  get fS() {
-    return this.signupForm.controls;
-  }
-  get fL() {
-    return this.loginForm.controls;
-  }
+
+  get fS() { return this.signupForm.controls; }
+  get fL() { return this.loginForm.controls; }
 
   setLoginFormControl() {
     this.loginForm = new FormGroup({
-      username: new FormControl('', [Validators.required, Validators.maxLength(8)]),
+      email: new FormControl('', [Validators.required, Validators.email]),
       password: new FormControl('', [Validators.required])
     });
   }
+
   setSignupFormControl() {
     this.signupForm = new FormGroup({
-      firstName: new FormControl('', [Validators.required]),
-      lastName: new FormControl('', []),
-      username: new FormControl('', [Validators.required, Validators.maxLength(8)]),
+      name: new FormControl('', [Validators.required]),
+      email: new FormControl('', [Validators.required, Validators.email]),
       password: new FormControl('', [Validators.required]),
     });
   }
 
-
   login() {
     if (this.loginForm.valid) {
-      this.isProgress = true;
-      this.authService.login(this.loginForm.value).subscribe((result: any) => {
-        this.isProgress = false;
-        if (result.size === 0) {
-          alert('User Does not exists.');
-        } else {
-          this.processLogin(result);
+      this.isLoading = true;
+      this.authService.loginUser(this.loginForm.value).then((res) => {
+        this.isLoading = false;
+        if (res?.user) {
+          this.user = res?.user;
+          this.process(this.user);
         }
       });
     }
@@ -68,53 +71,57 @@ export class AuthComponent implements OnInit {
 
   signup() {
     if (this.signupForm.valid) {
-      this.isProgress = true;
-      this.signupForm.value.password = btoa(this.signupForm.value.password);
-      this.authService.signup(this.signupForm.value).subscribe((response: any) => {
-        this.isProgress = false;
-        if (response.size === 0) {
-          this.addNewUser();
-        } else {
-          this.processSignup(response);
+      this.isLoading = true;
+      this.authService.registerUser(this.signupForm.value).then((res) => {
+        this.isLoading = false
+        if (res?.user) {
+          this.user = res?.user;
+          this.verificationSent = true;
+          this.process(this.user);
         }
       });
     }
   }
 
-
-  processLogin(result: any) {
-    result.forEach((doc: any) => {
-      this.isProgress = false;
-      if (doc.exists) {
-        const data: any = doc.data();
-        data.docId = doc.id;
-        if (data.password === btoa(this.loginForm.value.password)) {
-          this.localStorageService.setItem('token', btoa(doc.id));
-          this.localStorageService.setItem('user', data);
-          this.router.navigate(['chat']);
-        } else {
-          alert('Your password is incorrect');
+  process(user: firebase.User) {
+    if (user?.email) {
+      if (user.emailVerified) {
+        const metadata: any = user?.metadata as any;
+        const data: Contact = {
+          email: user?.email,
+          name: this.signupForm.value.name || user.displayName || 'Unknown User',
+          userId: user.uid,
+          emailVerified: user?.emailVerified,
+          profileImage: user?.photoURL || '',
+          metadata: {
+            creationTime: user.metadata.creationTime,
+            lastSignInTime: user.metadata.lastSignInTime,
+          }
         }
+        this.authService.saveUserDetail(data).subscribe((res) => {
+          if (res) {
+            this.toggleLogin();
+            this.localStorageService.setItem('chatapp-token', user.refreshToken);
+            this.localStorageService.setItem('user', data);
+            this.router.navigate(['chat']);
+          }
+        });
       } else {
-        alert('User Does not exists');
+        this.showVerification = true;
       }
-    });
+    }
   }
 
-  processSignup(response: any) {
-    response.forEach((doc: any) => {
-      this.isProgress = false;
-      if (doc.exists) {
-        alert('username is taken');
-      } else {
-        this.addNewUser();
-      }
-    });
+  resendVerification() {
+    if (this.user) {
+      this.user.sendEmailVerification().then((res) => {
+        this.verificationSent = true;
+      });
+    }
   }
 
   toggleLogin() {
     this.isLogin = !this.isLogin;
-    this.submitted = false;
     this.resetForms();
   }
 
@@ -123,19 +130,8 @@ export class AuthComponent implements OnInit {
     this.signupForm.reset();
   }
 
-
-  addNewUser() {
-    this.authService.insertUser(this.signupForm.value).then((result: any) => {
-      alert('success');
-      this.isLogin = true;
-    }).catch((err: any) => {
-      alert('there might be some error');
-    });
-  }
-
-
   checkIsLogin() {
-    const token = this.localStorageService.getItem('token');
+    const token = this.localStorageService.getItem('chatapp-token');
     if (token !== null) {
       this.router.navigate(['chat']);
     }

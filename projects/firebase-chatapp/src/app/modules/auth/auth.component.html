@@ -1,71 +1,76 @@
 <div class="container">
 
-  <mat-card class="login-card" *ngIf="isLogin">
+  <mat-card class="login-card" *ngIf="!showVerification">
     <div class="header-logo">
       <img src="assets/images/logo.png" />
-      <mat-card-title>Login to ChatApp</mat-card-title>
+      <mat-card-title>{{isLogin ? 'Login to ChatApp' : 'Signup to ChatApp'}}</mat-card-title>
     </div>
-    <mat-card-content>
-      <form [formGroup]="loginForm" (ngSubmit)="login()" novalidate>
-        <mat-form-field appearance="outline">
-          <mat-label>Username</mat-label>
-          <input matInput placeholder="Username" formControlName="username" />
-          <mat-error *ngIf="fL['username']?.errors?.['required']">Username is required</mat-error>
-          <mat-error *ngIf="fL['username']?.errors?.['maxlength']">Max Length is 6
-          </mat-error>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Password</mat-label>
-          <input matInput placeholder="Password" type="password" formControlName="password" />
-          <mat-error>Password is required</mat-error>
-        </mat-form-field>
-        <button mat-raised-button [disabled]="isProgress" [class.white-spinner]="isProgress"
-          color="primary">Login</button>
-      </form>
-      <div class="action">
-        <p>Don't have account, <span (click)="toggleLogin()">Signup Here</span></p>
-      </div>
-    </mat-card-content>
+    <ng-container *ngIf="isLogin; else signupContent">
+      <mat-card-content>
+        <form [formGroup]="loginForm" (ngSubmit)="login()" novalidate>
+          <mat-form-field appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput placeholder="Email" formControlName="email" />
+            <mat-error *ngIf="fL['email']?.hasError('required')">Please provide an email address.</mat-error>
+            <mat-error *ngIf="fL['email']?.hasError('email')">Please enter a valid email address.</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Password</mat-label>
+            <input matInput placeholder="Password" type="password" formControlName="password" />
+            <mat-error>Password is required</mat-error>
+          </mat-form-field>
+          <button mat-raised-button [disabled]="isLoading" [class.white-spinner]="isLoading"
+            color="primary">Login</button>
+        </form>
+        <div class="action">
+          <p>Don't have account, <span (click)="toggleLogin()">Signup Here</span></p>
+        </div>
+      </mat-card-content>
+    </ng-container>
+    <ng-template #signupContent>
+      <mat-card-content>
+        <form [formGroup]="signupForm" novalidate (ngSubmit)="signup()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Name</mat-label>
+            <input matInput placeholder="Name" formControlName="name" />
+            <mat-error>Name is required</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email</mat-label>
+            <input matInput placeholder="Email" formControlName="email" />
+            <mat-error *ngIf="fS['email']?.hasError('required')">Please provide an email address.</mat-error>
+            <mat-error *ngIf="fS['email']?.hasError('email')">Please enter a valid email address.</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <input matInput placeholder="Password" [type]="showPassword ? 'text' : 'password'"
+              formControlName="password" />
+            <mat-icon matSuffix class="pointer" (click)="$event.stopPropagation();showPassword = !showPassword">
+              {{showPassword ? 'visibility_off' : 'visibility'}}
+            </mat-icon>
+            <mat-error>Password is required</mat-error>
+          </mat-form-field>
+          <button mat-raised-button [disabled]="isLoading" [class.white-spinner]="isLoading" color="primary">
+            Signup</button>
+        </form>
+        <div class="action">
+          <p>Already have account, <span (click)="toggleLogin()">Login Here</span></p>
+        </div>
+      </mat-card-content>
+    </ng-template>
   </mat-card>
 
 
-  <mat-card class="login-card" *ngIf="!isLogin">
+  <mat-card class="login-card" *ngIf="showVerification">
     <div class="header-logo">
       <img src="assets/images/logo.png" />
-      <mat-card-title>Signup to ChatApp</mat-card-title>
+      <h4>Please Verify your Email to continue.</h4>
+      <p>Please check your mail inbox for verification email.</p>
+      <button mat-button color="primary" (click)="resendVerification()" [disabled]="isLoading || verificationSent"
+        [class.white-spinner]="isLoading">{{verificationSent ? 'Verification Sent' : 'Resend verification' }}</button>
+      <button mat-button color="primary" (click)="showVerification = !showVerification"
+        [class.white-spinner]="isLoading">Back to login</button>
     </div>
-    <mat-card-content>
-      <form [formGroup]="signupForm" novalidate (ngSubmit)="signup()">
-        <div>
-          <mat-form-field appearance="outline">
-            <mat-label>FirstName</mat-label>
-            <input matInput placeholder="FirstName" formControlName="firstName" />
-            <mat-error>FirstName is required</mat-error>
-          </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>LastName</mat-label>
-            <input matInput placeholder="LastName" formControlName="lastName" />
-          </mat-form-field>
-        </div>
-        <mat-form-field appearance="outline">
-          <mat-label>Username</mat-label>
-          <input matInput placeholder="Username" formControlName="username" />
-          <mat-error *ngIf="fS['username']?.errors?.['required']">Username is required</mat-error>
-          <mat-error *ngIf="fS['username']?.errors && fS['username']?.errors?.['maxlength']">Max Length is 6
-          </mat-error>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Password</mat-label>
-          <input matInput placeholder="Password" type="password" formControlName="password" />
-          <mat-error>Password is required</mat-error>
-        </mat-form-field>
-        <button mat-raised-button [disabled]="isProgress" [class.white-spinner]="isProgress"
-          color="primary">Signup</button>
-      </form>
-      <div class="action">
-        <p>Already have account, <span (click)="toggleLogin()">Login Here</span></p>
-      </div>
-    </mat-card-content>
   </mat-card>
 
 </div>

@@ -12,7 +12,8 @@
   --text-muted: #6c757d;
   --color-secondary: #aeea00;
   --color-secondary-rgb: 174, 234, 0;
-  --color-background: #fff;
+  --color-background: #EFEFEF;
+  --color-background-dark: #fff;
 }
 
 body.dark-theme {
@@ -30,4 +31,5 @@ body.dark-theme {
   --color-secondary: #aeea00;
   --color-secondary-rgb: 174, 234, 0;
   --color-background: #303030;
+  --color-background-dark: #212121;
 }

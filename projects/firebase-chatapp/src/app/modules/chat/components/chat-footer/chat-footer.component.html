@@ -1,0 +1,11 @@
+<div class="footer">
+  <div class="form-group">
+    <div class="form-field">
+      <textarea #textBox class="message-container" placeholder="Type message..." (keyup)="resize()"
+        (keyup.enter)="sendMessage()" [(ngModel)]="message"></textarea>
+    </div>
+    <button mat-icon-button color="primary" (click)="sendMessage()">
+      <mat-icon>send</mat-icon>
+    </button>
+  </div>
+</div>

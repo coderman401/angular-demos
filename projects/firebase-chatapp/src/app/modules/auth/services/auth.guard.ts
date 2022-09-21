@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, UrlTree, Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { LocalStorageService } from 'common-library';
 
 @Injectable({
   providedIn: 'root'
@@ -10,15 +10,15 @@ export class AuthGuard implements CanActivate {
 
   constructor(
     private router: Router,
+    private localStorageService: LocalStorageService,
   ) { }
 
-  canActivate(): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    const token = localStorage.getItem('token');
+  canActivate(): boolean | UrlTree {
+    const token = this.localStorageService.getItem('chatapp-token');
     if (token !== null) {
       return true; // User is authorized so return true.
     } else {
-      this.router.navigate(['auth']);
-      return false;
+      return this.router.createUrlTree(['auth']);
     }
   }
 }
