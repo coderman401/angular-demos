@@ -1,0 +1,57 @@
+- Generating browser application bundles (phase: setup)...
+✔ Browser application bundle generation complete.
+
+Initial Chunk Files                                         | Names                     |  Raw Size
+vendor.js                                                   | vendor                    |   8.63 MB |
+styles.css, styles.js                                       | styles                    | 383.90 kB |
+polyfills.js                                                | polyfills                 | 318.06 kB |
+main.js                                                     | main                      | 117.58 kB |
+runtime.js                                                  | runtime                   |  13.25 kB |
+
+| Initial Total             |   9.44 MB
+
+Lazy Chunk Files                                            | Names                     |  Raw Size
+projects_tictactoe_src_app_modules_game_game_module_ts.js   | modules-game-game-module  | 347.32 kB |
+node_modules_firebase_compat_analytics_dist_index_esm_js.js | firebase-compat-analytics |   7.15 kB |
+
+Build at: 2026-11-21T06:43:46.170Z - Hash: e0122896e3855117 - Time: 9443ms
+
+Warning: /home/user/angular-demos/dist/common-library/fesm2020/common-library.mjs depends on 'crypto-js'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
+
+Warning: /home/user/angular-demos/node_modules/socket.io-parser/build/esm-debug/index.js depends on 'debug'. CommonJS or AMD dependencies can cause optimization bailouts.
+For more info see: https://angular.io/guide/build#configuring-commonjs-dependencies
+
+
+
+** Angular Live Development Server is listening on localhost:4200, open your browser on http://localhost:4200/ **
+
+
+✔ Compiled successfully.
+✔ Browser application bundle generation complete.
+
+Initial Chunk Files                                       | Names                    |  Raw Size
+runtime.js                                                | runtime                  |  13.25 kB |
+
+Lazy Chunk Files                                          | Names                    |  Raw Size
+projects_tictactoe_src_app_modules_game_game_module_ts.js | modules-game-game-module | 347.47 kB |
+
+5 unchanged chunks
+
+Build at: 2026-11-21T06:44:39.527Z - Hash: c3af652d52d0b07e - Time: 1639ms
+
+✔ Compiled successfully.
+✔ Browser application bundle generation complete.
+
+Initial Chunk Files                                       | Names                    |  Raw Size
+main.js                                                   | main                     | 117.92 kB |
+runtime.js                                                | runtime                  |  13.25 kB |
+
+Lazy Chunk Files                                          | Names                    |  Raw Size
+projects_tictactoe_src_app_modules_game_game_module_ts.js | modules-game-game-module | 347.15 kB |
+
+4 unchanged chunks
+
+Build at: 2026-11-21T06:45:05.027Z - Hash: 55682ceac9a12983 - Time: 2074ms
+
+✔ Compiled successfully.

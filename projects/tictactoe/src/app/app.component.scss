@@ -115,51 +115,30 @@
   flex: 1;
 }
 
-// reference: full-bleed brand band at the bottom
 .foot {
-  margin-top: 48px;
-  padding: 48px 0;
-  background: var(--p);
-  color: var(--on-p);
+  padding: 28px 0 36px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
 
   &__in {
-    display: grid;
-    gap: 8px;
-    justify-items: center;
-    text-align: center;
-  }
-  &__lead {
-    font-size: 32px;
-    font-weight: 600;
-    line-height: 1.2;
-  }
-  &__text {
-    max-width: 44ch;
-    font-weight: 600;
-    opacity: 0.85;
-  }
-  &__links {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 24px;
+    gap: 10px;
+    align-items: center;
     justify-content: center;
-    margin-top: 8px;
-    a {
-      color: var(--on-p);
-      font-weight: 800;
-      font-size: 15px;
-      letter-spacing: 0.053em;
-      text-transform: uppercase;
+  }
+  a {
+    color: var(--p-text);
+    &:hover {
       text-decoration: underline;
-      text-decoration-thickness: 2px;
-      text-underline-offset: 4px;
     }
   }
-  &__credit {
-    margin-top: 8px;
-    font-size: 14px;
-    font-weight: 700;
-    opacity: 0.75;
+  &__dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--line-strong);
   }
 }
 
@@ -173,6 +152,13 @@
 }
 
 @media (max-width: 560px) {
+  .foot__in {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .foot__dot {
+    display: none;
+  }
   .brand__name {
     font-size: 24px;
   }

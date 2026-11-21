@@ -12,7 +12,8 @@
     </div>
   </div>
 
-  <div class="column">
+  <div class="play" [class.play--lobby]="player === 'friend' && !room">
+  <div class="play__main">
 
     <!-- Match strip: who is playing, the score and whose turn it is -->
     <section class="match" aria-label="Score" *ngIf="player !== 'friend' || room">
@@ -36,6 +37,17 @@
         </div>
       </ng-container>
     </section>
+
+<!-- Connection banner (online) -->
+<div class="conn" *ngIf="player === 'friend' && online.connection !== 'connected'" role="status">
+  <span class="conn__dot"></span>
+  <ng-container [ngSwitch]="online.connection">
+    <span *ngSwitchCase="'connecting'">Connecting to the game server…</span>
+    <span *ngSwitchCase="'reconnecting'">Connection lost. Reconnecting…</span>
+    <span *ngSwitchCase="'offline'">Can't reach the game server. Retrying…</span>
+    <span *ngSwitchDefault>Not connected</span>
+  </ng-container>
+</div>
 
     <!-- Mascot -->
     <div class="buddy" aria-live="polite">
@@ -110,21 +122,25 @@
         [ghost]="ghost" (cellClick)="onOnlineCellClick($event)"></board>
     </ng-container>
 
-    <!-- Controls under the board -->
-    <div class="controls">
-      <div class="seg seg--sm seg--lime" role="group" aria-label="Difficulty" *ngIf="player === 'single'">
+  </div>
+
+  <!-- Side column on desktop and tablet; sits under the board on phones -->
+  <aside class="play__side" *ngIf="player !== 'friend' || room" aria-label="Game options">
+    <section class="side-card" *ngIf="player === 'single'">
+      <h2 class="side-card__title">Difficulty</h2>
+      <div class="seg seg--sm seg--lime" role="group" aria-label="Difficulty">
         <button *ngFor="let d of difficulties" type="button" class="seg__btn" [class.on]="difficulty === d.value"
           [attr.aria-pressed]="difficulty === d.value" (click)="setDifficulty(d.value)">{{ d.label }}</button>
       </div>
-      <button type="button" class="btn btn--sm btn--outline" *ngIf="player !== 'friend'" (click)="viewStats()">
-        <mat-icon>bar_chart</mat-icon>Stats
-      </button>
-      <button type="button" class="btn btn--sm btn--outline" *ngIf="player === 'friend' && room" (click)="leaveRoom()">
-        <mat-icon>logout</mat-icon>Leave room
-      </button>
-    </div>
+    </section>
+    <button type="button" class="btn btn--sm btn--outline side-btn" *ngIf="player !== 'friend'" (click)="viewStats()">
+      <mat-icon>bar_chart</mat-icon>Stats
+    </button>
+    <button type="button" class="btn btn--sm btn--outline side-btn" *ngIf="player === 'friend' && room" (click)="leaveRoom()">
+      <mat-icon>logout</mat-icon>Leave room
+    </button>
     <p class="hint" *ngIf="player !== 'friend' || bothJoined">Tip: press 1–9 to play a square, 1 is top left.</p>
-
+  </aside>
   </div>
   <div class="sheet-spacer" *ngIf="sheet" aria-hidden="true"></div>
 </div>
@@ -145,17 +161,6 @@
       <span class="sheet__bar" aria-hidden="true"><i [style.animation-duration.ms]="roundPauseMs"></i></span>
     </div>
   </div>
-</div>
-
-<!-- Connection banner (online) -->
-<div class="conn" *ngIf="player === 'friend' && online.connection !== 'connected'" role="status">
-  <span class="conn__dot"></span>
-  <ng-container [ngSwitch]="online.connection">
-    <span *ngSwitchCase="'connecting'">Connecting to the game server…</span>
-    <span *ngSwitchCase="'reconnecting'">Connection lost. Reconnecting…</span>
-    <span *ngSwitchCase="'offline'">Can't reach the game server. Retrying…</span>
-    <span *ngSwitchDefault>Not connected</span>
-  </ng-container>
 </div>
 
 <ttt-confetti [fire]="confetti"></ttt-confetti>
