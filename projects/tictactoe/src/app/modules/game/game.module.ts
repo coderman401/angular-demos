@@ -6,6 +6,7 @@ import { GameComponent } from './game.component';
 import { StateTableComponent } from './components/state-table/state-table.component';
 import { CommonLibraryModule } from 'common-library';
 import { BoardComponent } from './components/board/board.component';
+import { MarkComponent } from './components/mark/mark.component';
 
 
 @NgModule({
@@ -13,6 +14,7 @@ import { BoardComponent } from './components/board/board.component';
     GameComponent,
     StateTableComponent,
     BoardComponent,
+    MarkComponent,
   ],
   imports: [
     CommonModule,

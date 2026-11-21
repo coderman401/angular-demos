@@ -1,11 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { MatRadioChange } from '@angular/material/radio';
 import { ActivatedRoute } from '@angular/router';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { ModalService, ResponseTypes, SnackbarService } from 'common-library';
-import { Subscription } from 'rxjs';
+import { Subscription, timer } from 'rxjs';
 import { StateTableComponent } from './components/state-table/state-table.component';
 import { Mark, OnlineState, SocketAck } from './models/room-info.model';
 import { WinnersData } from './models/winning-count.model';
@@ -23,14 +22,27 @@ export class GameComponent implements OnInit, OnDestroy {
   player = 'single';
   difficulty = 'hard';
   winningCount!: WinnersData;
-  online: OnlineState = { connection: 'idle', room: null, you: null };
+  online: OnlineState = { connection: 'idle', room: null, you: null, nextRoundAt: null };
   busy = false;
+  /** Whole seconds until the next online round starts (null when no round has just finished). */
+  secondsLeft: number | null = null;
+
+  readonly modes = [
+    { value: 'single', label: 'Single Player', icon: 'smart_toy' },
+    { value: 'two', label: 'Two Player', icon: 'groups' },
+    { value: 'friend', label: 'Play with Friend', icon: 'public' },
+  ];
+  readonly difficulties = [
+    { value: 'easy', label: 'Easy' },
+    { value: 'hard', label: 'Hard' },
+    { value: 'expert', label: 'Expert' },
+  ];
 
   userCreate = new FormControl('', [Validators.required]);
   userJoin = new FormControl('', [Validators.required]);
   roomId = new FormControl('', [Validators.required]);
 
-  private sub?: Subscription;
+  private sub = new Subscription();
 
   constructor(
     public gameService: GameService,
@@ -44,7 +56,12 @@ export class GameComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initGame();
-    this.sub = this.socketService.state$.subscribe((state) => this.online = state);
+    this.sub.add(this.socketService.state$.subscribe((state) => this.online = state));
+    // Drives the "Next round in 3…" label; cheap, and only does work while a round is finished.
+    this.sub.add(timer(0, 250).subscribe(() => {
+      const at = this.online.nextRoundAt;
+      this.secondsLeft = at ? Math.max(0, Math.ceil((at - Date.now()) / 1000)) : null;
+    }));
 
     // Invite links (?room=CODE) and refreshes during an online game open "Play with Friend".
     const invite = this.route.snapshot.queryParamMap.get('room');
@@ -57,7 +74,7 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.sub?.unsubscribe();
+    this.sub.unsubscribe();
   }
 
   initGame() {
@@ -73,11 +90,8 @@ export class GameComponent implements OnInit, OnDestroy {
     });
   }
 
-  changePlayer(event: MatRadioChange) {
-    this.selectMode(event.value);
-  }
-
-  private selectMode(mode: string) {
+  selectMode(mode: string) {
+    if (mode === this.player) return;
     const previous = this.gameService.player;
     this.player = mode;
     this.gameService.setPlayer(mode);
@@ -97,11 +111,49 @@ export class GameComponent implements OnInit, OnDestroy {
     this.gameService.resetGame();
   }
 
-  changeDifficulty(event: MatRadioChange) {
-    this.difficulty = event.value;
-    this.gameService.difficulty = this.difficulty;
+  setDifficulty(value: string) {
+    this.difficulty = value;
+    this.gameService.difficulty = value;
     this.gameService.resetGame();
   }
+
+  //#region labels
+
+  get subtitle(): string {
+    switch (this.player) {
+      case 'single': return 'Beat the computer. You play O.';
+      case 'two': return 'Pass and play on one screen.';
+      default: return 'Challenge a friend online. Rounds restart automatically.';
+    }
+  }
+
+  get xLabel(): string {
+    if (this.player === 'single') return 'Computer';
+    if (this.player === 'two') return 'Player X';
+    return this.playerLabel('X');
+  }
+
+  get oLabel(): string {
+    if (this.player === 'single') return 'You';
+    if (this.player === 'two') return 'Player O';
+    return this.playerLabel('O');
+  }
+
+  get xScore(): number { return this.room && this.player === 'friend' ? this.room.scores.X : this.winningCount.xWins; }
+  get oScore(): number { return this.room && this.player === 'friend' ? this.room.scores.O : this.winningCount.oWins; }
+  get drawScore(): number { return this.room && this.player === 'friend' ? this.room.scores.draw : this.winningCount.draw; }
+
+  private playerLabel(mark: Mark): string {
+    const p = this.room?.players[mark];
+    if (!p) return 'Waiting for friend…';
+    return this.you === mark ? `${p.name} (you)` : p.name;
+  }
+
+  playerOnline(mark: Mark): boolean {
+    return this.room?.players[mark]?.connected ?? false;
+  }
+
+  //#endregion labels
 
   //#region local play
 
@@ -122,6 +174,10 @@ export class GameComponent implements OnInit, OnDestroy {
   get opponent(): Mark | null { return this.you === 'X' ? 'O' : this.you === 'O' ? 'X' : null; }
   get isMyTurn(): boolean { return this.socketService.isMyTurn; }
   get connected(): boolean { return this.online.connection === 'connected'; }
+  /** Both seats taken: the invite UI goes away and the match runs by itself. */
+  get bothJoined(): boolean { return !!this.room?.players.X && !!this.room?.players.O; }
+  get finished(): boolean { return this.room?.status === 'finished'; }
+  get boardLocked(): boolean { return !this.isMyTurn; }
 
   get statusMessage(): string {
     const room = this.room;
@@ -129,19 +185,13 @@ export class GameComponent implements OnInit, OnDestroy {
     const opp = this.opponent ? room.players[this.opponent] : null;
     if (room.status === 'waiting') return 'Waiting for your friend to join…';
     if (room.status === 'finished') {
-      if (room.winner === 'draw') return 'It\'s a draw!';
-      return room.winner === this.you ? 'You won! 🎉' : `${room.players[room.winner as Mark]?.name ?? 'Opponent'} won`;
+      const next = this.secondsLeft === null ? '' : ` Next round in ${this.secondsLeft}s`;
+      if (room.winner === 'draw') return `It's a draw!${next}`;
+      const who = room.winner === this.you ? 'You won! 🎉' : `${room.players[room.winner as Mark]?.name ?? 'Opponent'} won.`;
+      return who + next;
     }
     if (opp && !opp.connected) return `${opp.name} lost connection, waiting for them to come back…`;
     return this.isMyTurn ? 'Your turn' : `${opp?.name ?? 'Opponent'}'s turn`;
-  }
-
-  get rematchMessage(): string {
-    const room = this.room;
-    if (!room || room.status !== 'finished' || !this.you || !this.opponent) return '';
-    if (room.rematch[this.you]) return 'Waiting for your friend to accept the rematch…';
-    if (room.rematch[this.opponent]) return `${room.players[this.opponent]?.name} wants a rematch!`;
-    return '';
   }
 
   async createGame() {
@@ -168,10 +218,6 @@ export class GameComponent implements OnInit, OnDestroy {
     }
     const res = await this.socketService.playTurn(index);
     if (!res.ok) this.snackbar.showSnackbar(res.error ?? 'Move rejected', ResponseTypes.warning);
-  }
-
-  async rematch() {
-    await this.withBusy(() => this.socketService.rematch());
   }
 
   async leaveRoom() {

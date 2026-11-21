@@ -1,11 +1,7 @@
-<ng-container *ngFor="let row of board">
-  <div class="board-row">
-    <ng-container *ngFor="let column of row">
-      <button class="square {{ squares[column] }}" [class.win]="winLine.includes(column)"
-        [class.locked]="disabled && !squares[column]" [attr.aria-label]="'Cell ' + (column + 1) + ' ' + (squares[column] || 'empty')"
-        (click)="clickSquare(column)">
-        {{ squares[column] }}
-      </button>
-    </ng-container>
-  </div>
-</ng-container>
+<div class="grid" role="group" aria-label="Tic tac toe board" [class.locked]="disabled">
+  <button *ngFor="let i of cells" type="button" class="tile" [class.x]="squares[i] === 'X'"
+    [class.o]="squares[i] === 'O'" [class.win]="winLine.includes(i)" [class.dim]="winLine.length && !winLine.includes(i)"
+    [attr.aria-label]="label(i)" (click)="clickSquare(i)">
+    <ttt-mark *ngIf="squares[i]" class="draw" [type]="squares[i]"></ttt-mark>
+  </button>
+</div>

@@ -16,7 +16,8 @@ export interface RoomState {
   line: number[];
   scores: { X: number; O: number; draw: number };
   round: number;
-  rematch: Record<Mark, boolean>;
+  /** Time until the server allows the next round (only while status is 'finished'). */
+  nextRoundInMs: number | null;
 }
 
 export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'offline';
@@ -25,6 +26,8 @@ export interface OnlineState {
   connection: ConnectionStatus;
   room: RoomState | null;
   you: Mark | null;
+  /** Local timestamp (ms) at which the next round starts; null unless a round just finished. */
+  nextRoundAt: number | null;
 }
 
 export interface SocketAck {
@@ -34,4 +37,5 @@ export interface SocketAck {
   room?: RoomState;
   you?: Mark;
   playerId?: string;
+  retryInMs?: number;
 }

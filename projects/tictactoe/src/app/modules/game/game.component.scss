@@ -1,145 +1,334 @@
 .game {
-  background: #fff url("/assets/images/bg.png");
-  height: 100%;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  .board {
-    margin: 1.6rem 0;
-    border-radius: 0.4rem;
-    background-color: #cfc8b8;
-    border: 1rem solid #cfc8b8;
-    box-shadow: 0rem 0rem 2.5rem 0rem rgba(0, 0, 0, 0.75);
-  }
+  padding-block: 28px 40px;
+}
 
-  .select-player {
-    display: flex;
-    padding: 0.8rem;
-    justify-content: center;
-    .radio {
-      display: block;
-      position: relative;
-      padding-left: 3.5rem;
-      padding-right: 2rem;
-      margin-bottom: 1.2rem;
-      cursor: pointer;
-      font-size: 2.2rem;
-    }
-  }
-  .single-info {
-    padding: 0.8rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    label {
-      font-size: 2rem;
-      font-weight: bold;
-      margin: 0rem 1rem;
-    }
-    img {
-      vertical-align: middle;
-    }
-  }
-  .create-game,
-  .join-game {
-    label {
-      font-weight: bold;
-      margin-bottom: 0.4rem;
-    }
-    .form-group {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      mat-form-field {
-        margin-right: 0.8rem;
-        flex: 1;
-      }
-      button {
-        margin-bottom: 2.2rem;
-        margin-left: 0.8rem;
-      }
-    }
-  }
+.hero {
+  text-align: center;
+  margin-bottom: 22px;
 
-  .connection {
-    padding: 0.6rem 1.2rem;
-    border-radius: 0.4rem;
-    font-size: 1.4rem;
-    background: #fff3cd;
-    color: #664d03;
+  &__title {
+    font-size: clamp(34px, 6vw, 52px);
+    font-weight: 600;
+    line-height: 1.05;
+    color: var(--heading);
   }
-
-  .room-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.8rem;
-    align-items: center;
-    justify-content: center;
-    padding: 0.8rem;
-    .code {
-      font-size: 1.8rem;
-      b {
-        letter-spacing: 0.2rem;
-      }
-    }
-  }
-
-  .players {
-    display: flex;
-    gap: 2.4rem;
-    justify-content: center;
-    font-size: 1.8rem;
-    .player {
-      padding: 0.4rem 0.8rem;
-      border-radius: 0.4rem;
-      border: 2px solid transparent;
-      &.active {
-        border-color: #6b948c;
-      }
-      img {
-        vertical-align: middle;
-        margin-right: 0.4rem;
-      }
-      .offline {
-        color: #c62828;
-      }
-    }
-  }
-
-  .rematch {
-    text-align: center;
-    p {
-      margin-top: 0.8rem;
-      font-size: 1.4rem;
-    }
-  }
-
-  .game-stats {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.8rem;
-    .stats {
-      margin: 0.8rem;
-      text-align: center;
-    }
-    .stats span {
-      font-size: 2rem;
-      font-weight: bold;
-    }
-    img {
-      vertical-align: middle;
-    }
-    p:last-child {
-      cursor: pointer;
-    }
+  &__sub {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 16px;
+    font-weight: 700;
   }
 }
-.link {
-  a {
-    font-size: 1.6rem;
-    color: #00bcd4;
+
+.modes {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 auto 20px;
+  padding: 10px 16px;
+  width: fit-content;
+  max-width: 100%;
+  border-radius: var(--r-sm);
+  background: var(--s-soft);
+  color: var(--heading);
+  font-weight: 700;
+
+  &__dot {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--s);
+    box-shadow: 0 0 0 0 var(--s);
+    animation: pulse 1.4s ease-out infinite;
+  }
+}
+
+/* lobby */
+.lobby {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.card__title {
+  margin: 0 0 16px;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--heading);
+}
+.how {
+  grid-column: 1 / -1;
+
+  &__list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-weight: 700;
+  }
+  b {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--p);
+    color: var(--on-p);
+    box-shadow: 0 3px 0 var(--p-lip);
+  }
+}
+
+/* game layout */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: clamp(16px, 3vw, 28px);
+
+  &__board {
+    position: relative;
+  }
+}
+
+.pill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: var(--fill);
+  color: var(--heading);
+  font-size: 16px;
+  font-weight: 800;
+  text-align: center;
+
+  ttt-mark {
+    font-size: 20px;
+  }
+  &__sep {
+    color: var(--muted);
+    font-weight: 700;
+  }
+  &__round {
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--p-soft);
+    color: var(--p-text);
+    font-size: 13px;
+  }
+  &--win {
+    background: var(--s);
+    color: var(--on-s);
+    animation: pop 0.5s var(--ease-pop);
+  }
+}
+
+/* invite overlay (hidden once both players joined) */
+.invite {
+  position: absolute;
+  inset: -6px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px;
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--card) 94%, transparent);
+  backdrop-filter: blur(6px);
+  text-align: center;
+  animation: pop 0.4s var(--ease-pop);
+
+  .eyebrow {
+    margin: 0;
+  }
+  &__code {
+    margin: 2px 0 14px;
+    padding: 6px 22px;
+    border: var(--edge) dashed var(--line-strong);
+    border-radius: var(--r-md);
+    font-size: clamp(34px, 9vw, 52px);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: var(--heading);
+    user-select: all;
+  }
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+  &__wait {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 16px 0 0;
+    color: var(--muted);
+    font-weight: 700;
+  }
+}
+
+.countdown {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--fill);
+  overflow: hidden;
+
+  &__bar {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--p);
+    transform-origin: left;
+    animation: drain linear forwards;
+  }
+}
+
+/* side column */
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.score {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .eyebrow {
+    margin-bottom: 2px;
+  }
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px 8px 8px;
+    border-radius: var(--r-sm);
+    background: var(--fill);
+  }
+  &__mark {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    font-size: 22px;
+    font-weight: 900;
+    background: var(--line);
+    color: var(--heading);
+  }
+  .x &__mark {
+    background: var(--p);
+    color: var(--on-p);
+    box-shadow: 0 3px 0 var(--p-lip);
+  }
+  .o &__mark {
+    background: var(--s);
+    color: var(--on-s);
+    box-shadow: 0 3px 0 var(--s-lip);
+  }
+  &__name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 800;
+    color: var(--heading);
+  }
+  &__n {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--heading);
+    min-width: 1.5ch;
+    text-align: right;
+  }
+}
+
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background: #3ecf5a;
+  vertical-align: middle;
+
+  &.off {
+    background: var(--danger);
+  }
+}
+
+@keyframes pulse {
+  70% {
+    box-shadow: 0 0 0 9px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.94);
+    opacity: 0;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes drain {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@media (max-width: 820px) {
+  .layout,
+  .lobby {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .how__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .seg__btn {
+    padding: 0 12px;
+  }
+  .invite__actions .btn {
+    width: 100%;
   }
 }

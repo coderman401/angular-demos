@@ -1,7 +1,36 @@
-<div class="page-wrapper">
-  <main-header [showToggleThemeButton]="false"></main-header>
-  <app-secondary-header [title]="'TicTacToe'"></app-secondary-header>
-  <main class="main">
-    <router-outlet></router-outlet>
-  </main>
-</div>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap nav__in">
+    <a class="brand" routerLink="/" aria-label="TicTacToe, home">
+      <svg class="brand__logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+        <rect y="3" width="40" height="37" rx="12" class="lip" />
+        <rect width="40" height="37" rx="12" class="face" />
+        <path d="M15 8v21M25 8v21M8 15h24M8 23h24" class="grid" />
+        <path d="M9.6 9.6l4 4M13.6 9.6l-4 4" class="x" />
+        <circle cx="30" cy="27" r="2.6" class="o" />
+      </svg>
+      <span class="brand__name display">TicTacToe</span>
+    </a>
+
+    <nav class="nav__links" aria-label="Site">
+      <a class="nav__link" href="https://coderman401.web.app/demos" target="_blank" rel="noopener">More demos</a>
+      <button type="button" class="icon-btn" (click)="toggleTheme()"
+        [attr.aria-label]="themeService.isDark ? 'Switch to light theme' : 'Switch to dark theme'">
+        <mat-icon>{{ themeService.isDark ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="main">
+  <router-outlet></router-outlet>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot__in">
+    <span>Made by <a href="https://coderman401.web.app/demos" target="_blank" rel="noopener">Coderman401</a></span>
+    <span class="foot__dot" aria-hidden="true"></span>
+    <span>Realtime play powered by Socket.IO</span>
+  </div>
+</footer>

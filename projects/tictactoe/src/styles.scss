@@ -1,26 +1,357 @@
 @use "../../../dist/common-library/styles/index.scss";
-@import url("https://fonts.googleapis.com/css?family=Patrick+Hand&display=swap");
+
+/*
+  TicTacToe design system
+  -----------------------
+  Same language as the Everyday Calculator: chunky "lip" buttons and cards,
+  2px borders, rounded corners, Fredoka + Nunito, light/dark tokens.
+  Brand colours come from the shared library: --color-primary (cyan) and
+  --color-secondary (lime).
+*/
+
+html {
+  font-size: 16px;
+}
 
 body {
+  color-scheme: light;
+
+  --font-display: "Fredoka", "Nunito", ui-rounded, system-ui, sans-serif;
+  --font-ui: "Nunito", ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  // brand
+  --p: var(--color-primary);
+  --p-lip: color-mix(in srgb, var(--color-primary) 70%, #000);
+  --p-soft: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  --p-text: light-dark(#00778a, #5be6f7);
+  --on-p: #03303a;
+  --s: var(--color-secondary);
+  --s-lip: color-mix(in srgb, var(--color-secondary) 66%, #000);
+  --s-soft: color-mix(in srgb, var(--color-secondary) 20%, transparent);
+  --s-text: light-dark(#547000, var(--color-secondary));
+  --on-s: #1f2b00;
+
+  // neutrals
+  --bg: light-dark(#ffffff, #131f24);
+  --card: light-dark(#ffffff, #18262c);
+  --fill: light-dark(#f4f7f8, #202f36);
+  --line: light-dark(#e5e5e5, #2f414a);
+  --line-strong: light-dark(#cfcfcf, #4c6069);
+  --ink: light-dark(#3c3c3c, #e6edf0);
+  --heading: light-dark(#06323a, #ffffff);
+  --muted: light-dark(#6f7c80, #9fb1b8);
+  --danger: light-dark(#e03a3a, #ff7a7a);
+
+  // shape + motion
+  --edge: 2px;
+  --lip: 4px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+
   margin: 0;
-  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 500 15px/1.47 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+
+  &.dark-theme {
+    color-scheme: dark;
+  }
+
+  // beat the shared library's global font rule
   & * {
-    font-family: "Patrick Hand", cursive !important;
+    font-family: var(--font-ui) !important;
+  }
+  .display {
+    font-family: var(--font-display) !important;
+    letter-spacing: -0.01em;
   }
 }
-.mat-form-field-appearance-outline {
-  .mat-form-field-label {
-    top: 2rem;
-    margin-top: 0;
+
+:focus-visible {
+  outline: 3px solid var(--p);
+  outline-offset: 2px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1040px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 4vw, 40px);
+  box-sizing: border-box;
+}
+
+.card {
+  background: var(--card);
+  border: var(--edge) solid var(--line);
+  border-bottom-width: var(--lip);
+  border-radius: var(--r-lg);
+  padding: 20px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- buttons ---------- */
+.btn {
+  --bg-c: var(--fill);
+  --lip-c: var(--line-strong);
+  --fg: var(--heading);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 22px;
+  border: 0;
+  border-bottom: var(--lip) solid var(--lip-c);
+  border-radius: var(--r-sm);
+  background: var(--bg-c);
+  color: var(--fg);
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.16s var(--ease-out), filter 0.16s var(--ease-out);
+  user-select: none;
+
+  .mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
   }
-  .mat-form-field-infix {
-    padding: 1.2rem 0;
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.04);
   }
-  &.mat-form-field-can-float.mat-form-field-should-float,
-  &.mat-form-field-can-float .mat-input-server:focus + .mat-form-field-label-wrapper {
-    .mat-form-field-label {
-      transform: translateY(-2rem) scale(0.75);
-      width: 133.3333333333%;
+  &:active:not(:disabled) {
+    transform: translateY(3px);
+    border-bottom-width: 1px;
+    transition-duration: 0.05s;
+  }
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+  &--primary {
+    --bg-c: var(--p);
+    --lip-c: var(--p-lip);
+    --fg: var(--on-p);
+  }
+  &--secondary {
+    --bg-c: var(--s);
+    --lip-c: var(--s-lip);
+    --fg: var(--on-s);
+  }
+  &--ghost {
+    --bg-c: transparent;
+    --lip-c: var(--line);
+    border: var(--edge) solid var(--line);
+    border-bottom-width: var(--lip);
+  }
+  &--block {
+    width: 100%;
+  }
+  &--sm {
+    min-height: 40px;
+    padding: 0 16px;
+    font-size: 14px;
+  }
+}
+
+/* ---------- segmented control ---------- */
+.seg {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 4px;
+  gap: 4px;
+  border: var(--edge) solid var(--line);
+  border-bottom-width: var(--lip);
+  border-radius: var(--r-md);
+  background: var(--card);
+  overflow-x: auto;
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: calc(var(--r-md) - 4px);
+    background: transparent;
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 800;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s var(--ease-out), color 0.2s var(--ease-out), transform 0.16s var(--ease-out);
+
+    .mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
     }
+    &:hover {
+      color: var(--heading);
+      background: var(--fill);
+    }
+    &.on {
+      background: var(--p);
+      color: var(--on-p);
+      box-shadow: 0 3px 0 var(--p-lip);
+    }
+  }
+  &--sm &__btn {
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: 14px;
+  }
+  &--sm.seg--lime &__btn.on {
+    background: var(--s);
+    color: var(--on-s);
+    box-shadow: 0 3px 0 var(--s-lip);
+  }
+}
+
+/* ---------- form fields ---------- */
+.field {
+  display: block;
+  margin-bottom: 14px;
+
+  &__label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--heading);
+  }
+  &__input {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 52px;
+    padding: 0 16px;
+    border: var(--edge) solid var(--line);
+    border-radius: var(--r-sm);
+    background: var(--card);
+    color: var(--heading);
+    font-size: 16px;
+    font-weight: 700;
+    transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+
+    &::placeholder {
+      color: var(--muted);
+      font-weight: 600;
+    }
+    &:hover {
+      border-color: var(--line-strong);
+    }
+    &:focus {
+      outline: none;
+      border-color: var(--p);
+      box-shadow: 0 0 0 4px var(--p-soft);
+    }
+    &.is-invalid {
+      border-color: var(--danger);
+    }
+    &--code {
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+  }
+  &__error {
+    margin: 4px 2px 0;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--danger);
+  }
+}
+
+/* ---------- Material overrides (dialogs, snackbar) ---------- */
+.mat-dialog-container {
+  background: var(--card) !important;
+  color: var(--ink) !important;
+  border: var(--edge) solid var(--line);
+  border-bottom-width: var(--lip);
+  border-radius: var(--r-lg) !important;
+  box-shadow: none !important;
+  padding: 24px !important;
+
+  .mat-dialog-title,
+  h1 {
+    font-family: var(--font-display) !important;
+    color: var(--heading);
+    font-weight: 600 !important;
+    font-size: 28px !important;
+    letter-spacing: -0.01em;
+  }
+  .mat-dialog-actions {
+    padding: 8px 0 0;
+    margin-bottom: 0;
+  }
+  .mat-raised-button,
+  .mat-button-base.mat-raised-button {
+    min-height: 44px;
+    padding: 0 28px;
+    border-radius: var(--r-sm);
+    border-bottom: var(--lip) solid var(--p-lip);
+    background: var(--p);
+    color: var(--on-p);
+    font-weight: 800;
+    box-shadow: none;
+    transition: transform 0.16s var(--ease-out);
+    &:active {
+      transform: translateY(3px);
+      border-bottom-width: 1px;
+    }
+  }
+}
+.cdk-overlay-dark-backdrop {
+  background: rgba(6, 29, 33, 0.55);
+}
+.mat-snack-bar-container {
+  background: var(--heading) !important;
+  color: var(--bg) !important;
+  border-bottom: var(--lip) solid var(--p-lip);
+  border-radius: var(--r-sm) !important;
+  font-weight: 700;
+  min-height: 0 !important;
+}
+
+@media (max-width: 560px) {
+  .modes .seg {
+    width: 100%;
+    overflow: visible;
+    &__btn {
+      flex: 1;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+      min-height: 58px;
+      padding: 0 4px;
+      font-size: 13px;
+      line-height: 1.15;
+      text-align: center;
+      white-space: normal;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
 }
