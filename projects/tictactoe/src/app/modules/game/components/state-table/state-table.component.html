@@ -1,29 +1,30 @@
-<h1 mat-dialog-title class="display">Your stats</h1>
+<h1 mat-dialog-title>Your stats</h1>
 <div mat-dialog-content>
   <table class="stats">
     <thead>
       <tr>
-        <th></th>
-        <th><ttt-mark type="X"></ttt-mark> X</th>
-        <th><ttt-mark type="O"></ttt-mark> O</th>
-        <th>Draw</th>
+        <th scope="col"><span class="sr">Mode</span></th>
+        <th scope="col" class="x"><ttt-mark type="X"></ttt-mark><span class="sr">X wins</span></th>
+        <th scope="col" class="o"><ttt-mark type="O"></ttt-mark><span class="sr">O wins</span></th>
+        <th scope="col" class="d">Draws</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <th scope="row">Single player</th>
+        <th scope="row">Computer</th>
         <td>{{ data.one.xWins }}</td>
         <td>{{ data.one.oWins }}</td>
         <td>{{ data.one.draw }}</td>
       </tr>
       <tr>
-        <th scope="row">Two player</th>
+        <th scope="row">Pass &amp; play</th>
         <td>{{ data.two.xWins }}</td>
         <td>{{ data.two.oWins }}</td>
         <td>{{ data.two.draw }}</td>
       </tr>
     </tbody>
   </table>
+  <p class="note">You play O against the computer. Online rooms keep their own score.</p>
 </div>
 
 <div mat-dialog-actions align="end">

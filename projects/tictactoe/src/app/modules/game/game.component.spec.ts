@@ -2,13 +2,16 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import { CommonLibraryModule } from 'common-library';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 
 import { BoardComponent } from './components/board/board.component';
 import { MarkComponent } from './components/mark/mark.component';
 import { GameComponent } from './game.component';
 import { OnlineState, RoomState } from './models/room-info.model';
 import { SocketService } from './services/socket.service';
+import { SoundService } from '../../services/sound.service';
+import { MascotComponent } from './components/mascot/mascot.component';
+import { ConfettiComponent } from './components/confetti/confetti.component';
 
 class FakeSocketService {
   state = new BehaviorSubject<OnlineState>({ connection: 'idle', room: null, you: null, nextRoundAt: null });
@@ -48,8 +51,11 @@ describe('GameComponent', () => {
     socket = new FakeSocketService();
     await TestBed.configureTestingModule({
       imports: [CommonLibraryModule, NoopAnimationsModule, RouterTestingModule],
-      declarations: [GameComponent, BoardComponent, MarkComponent],
-      providers: [{ provide: SocketService, useValue: socket }],
+      declarations: [GameComponent, BoardComponent, MarkComponent, MascotComponent, ConfettiComponent],
+      providers: [
+        { provide: SocketService, useValue: socket },
+        { provide: SoundService, useValue: { enabled: false, play: () => { }, toggle: () => { } } },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GameComponent);
@@ -92,7 +98,7 @@ describe('GameComponent', () => {
     it('locks the board on the opponent\'s turn', () => {
       socket.state.next({ connection: 'connected', you: 'O', nextRoundAt: null, room: room() });
       fixture.detectChanges();
-      expect(el().textContent).toContain('Alice\'s turn');
+      expect(el().textContent).toContain('Alice is thinking');
       el().querySelectorAll<HTMLButtonElement>('board button.tile')[4].click();
       expect(socket.playTurn).not.toHaveBeenCalled();
     });
@@ -117,7 +123,7 @@ describe('GameComponent', () => {
       expect(el().querySelector('.invite')).not.toBeNull();
     });
 
-    it('a finished round shows the result, the winning line and a countdown; there is no rematch button', () => {
+    it('a finished round shows the result banner, winning line and countdown; no rematch button', () => {
       const now = Date.now();
       socket.state.next({
         connection: 'connected', you: 'O', nextRoundAt: now + 2500,
@@ -126,18 +132,55 @@ describe('GameComponent', () => {
       component.secondsLeft = 3;
       fixture.detectChanges();
       expect(el().textContent).toContain('Alice won');
-      expect(el().textContent).toContain('Next round in 3s');
+      expect(el().querySelector('.toast')?.textContent).toContain('Next round in 3');
       expect(el().querySelectorAll('board .tile.win').length).toBe(3);
-      expect(el().querySelector('.countdown')).not.toBeNull();
+      expect(el().querySelector('.toast--lose .toast__bar')).not.toBeNull();
       expect(Array.from(el().querySelectorAll('button')).some((b) => /again|rematch/i.test(b.textContent ?? ''))).toBeFalse();
-      const scores = Array.from(el().querySelectorAll('.score__n')).map((s) => s.textContent?.trim());
-      expect(scores).toEqual(['2', '1', '1']);
+      const scores = Array.from(el().querySelectorAll('.match__score')).map((s) => s.textContent?.trim());
+      expect(scores).toEqual(['2', '1']);
+      expect(el().querySelector('.match__draws')?.textContent?.trim()).toBe('1 draw');
+    });
+
+    it('asks before leaving a room and only leaves when confirmed', async () => {
+      socket.state.next({ connection: 'connected', you: 'X', nextRoundAt: null, room: room() });
+      fixture.detectChanges();
+      const open = spyOn(component.dialog, 'open');
+
+      open.and.returnValue({ afterClosed: () => of(false) } as any);
+      await component.leaveRoom();
+      expect(open).toHaveBeenCalledTimes(1);
+      expect((open.calls.mostRecent().args[1] as any).data.title).toBe('Leave this game?');
+      expect(socket.leaveGame).not.toHaveBeenCalled();
+
+      open.and.returnValue({ afterClosed: () => of(true) } as any);
+      await component.leaveRoom();
+      expect(socket.leaveGame).toHaveBeenCalledTimes(1);
+    });
+
+    it('asks before switching mode while in a room, and uses a different message while waiting', async () => {
+      socket.state.next({ connection: 'connected', you: 'X', nextRoundAt: null, room: room({ status: 'waiting', players: { X: { name: 'Alice', connected: true }, O: null } }) });
+      fixture.detectChanges();
+      const open = spyOn(component.dialog, 'open').and.returnValue({ afterClosed: () => of(false) } as any);
+      await component.selectMode('single');
+      expect(component.player).toBe('friend', 'stays online when the player keeps the room');
+      expect((open.calls.mostRecent().args[1] as any).data.title).toBe('Close this room?');
+
+      open.and.returnValue({ afterClosed: () => of(true) } as any);
+      await component.selectMode('single');
+      expect(component.player).toBe('single');
+    });
+
+    it('does not ask anything when there is no room to lose', async () => {
+      const open = spyOn(component.dialog, 'open');
+      await component.selectMode('single');
+      expect(open).not.toHaveBeenCalled();
+      expect(component.player).toBe('single');
     });
 
     it('shows when the opponent dropped', () => {
       socket.state.next({ connection: 'connected', you: 'X', nextRoundAt: null, room: room({ players: { X: { name: 'Alice', connected: true }, O: { name: 'Bob', connected: false } } }) });
       fixture.detectChanges();
-      expect(el().textContent).toContain('Bob lost connection');
+      expect(el().textContent).toContain('Bob dropped out');
     });
   });
 });

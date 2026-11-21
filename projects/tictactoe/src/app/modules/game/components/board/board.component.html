@@ -1,7 +1,18 @@
-<div class="grid" role="group" aria-label="Tic tac toe board" [class.locked]="disabled">
+<div #grid class="grid" role="group" aria-label="Tic tac toe board. Use arrow keys to move, or press 1 to 9 to play."
+  [class.locked]="disabled" (keydown)="onGridKey($event)">
   <button *ngFor="let i of cells" type="button" class="tile" [class.x]="squares[i] === 'X'"
-    [class.o]="squares[i] === 'O'" [class.win]="winLine.includes(i)" [class.dim]="winLine.length && !winLine.includes(i)"
-    [attr.aria-label]="label(i)" (click)="clickSquare(i)">
-    <ttt-mark *ngIf="squares[i]" class="draw" [type]="squares[i]"></ttt-mark>
+    [class.o]="squares[i] === 'O'" [class.win]="winLine.includes(i)"
+    [class.dim]="winLine.length && !winLine.includes(i)" [class.last]="lastMove === i && !winLine.length"
+    [attr.tabindex]="focusIndex === i ? 0 : -1" [attr.aria-label]="label(i)" [attr.aria-disabled]="disabled || !!squares[i]"
+    (click)="clickSquare(i)" (focus)="focusIndex = i">
+    <ttt-mark *ngIf="squares[i]; else empty" class="draw" [type]="squares[i]"></ttt-mark>
+    <ng-template #empty>
+      <ttt-mark *ngIf="ghost && !disabled" class="ghost" [type]="ghost"></ttt-mark>
+    </ng-template>
   </button>
+
+  <svg *ngIf="strike as s" class="strike" [attr.viewBox]="'0 0 ' + s.w + ' ' + s.h" aria-hidden="true">
+    <line [attr.x1]="s.x1" [attr.y1]="s.y1" [attr.x2]="s.x2" [attr.y2]="s.y2" class="strike__under" pathLength="1" />
+    <line [attr.x1]="s.x1" [attr.y1]="s.y1" [attr.x2]="s.x2" [attr.y2]="s.y2" class="strike__line" pathLength="1" />
+  </svg>
 </div>

@@ -1,18 +1,32 @@
 :host {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background:
-    radial-gradient(900px 420px at 50% -120px, var(--p-soft), transparent 70%),
-    var(--bg);
+  background: var(--bg);
+  isolation: isolate;
+}
+
+// the original doodle pattern, behind everything
+:host::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url("/assets/images/bg.png");
+  pointer-events: none;
+}
+:host-context(body.dark-theme)::before {
+  filter: invert(1);
+  opacity: 0.045;
 }
 
 .skip-link {
   position: absolute;
   left: 12px;
   top: 8px;
-  z-index: 10;
-  padding: 8px 14px;
+  z-index: 50;
+  padding: 10px 16px;
   border-radius: var(--r-sm);
   background: var(--heading);
   color: var(--bg);
@@ -24,32 +38,22 @@
 }
 
 .nav {
-  border-bottom: var(--edge) solid var(--line);
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
-  z-index: 5;
+  z-index: 20;
+  border-bottom: var(--edge) solid var(--line);
+  background: var(--bg);
 
   &__in {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 64px;
+    min-height: 68px;
   }
   &__links {
     display: flex;
     align-items: center;
-    gap: 6px;
-  }
-  &__link {
-    padding: 8px 14px;
-    border-radius: var(--r-sm);
-    color: var(--heading);
-    font-weight: 800;
-    &:hover {
-      background: var(--fill);
-    }
+    gap: 8px;
   }
 }
 
@@ -57,40 +61,32 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: var(--heading);
 
   &__logo {
-    width: 38px;
-    height: 38px;
-    .lip {
-      fill: var(--p-lip);
-    }
-    .face {
-      fill: var(--p);
-    }
-    .grid {
+    width: 42px;
+    height: 42px;
+    flex: none;
+    .lip { fill: var(--p-lip); }
+    .face { fill: var(--p); }
+    .mark-x {
+      fill: none;
       stroke: var(--on-p);
-      stroke-width: 2.4;
-      stroke-linecap: round;
-      opacity: 0.55;
-    }
-    .x {
-      stroke: var(--on-p);
-      stroke-width: 2.6;
+      stroke-width: 3.8;
       stroke-linecap: round;
     }
-    .o {
-      fill: var(--s);
-      stroke: var(--on-s);
-      stroke-width: 1.6;
+    .mark-o {
+      fill: none;
+      stroke: var(--s);
+      stroke-width: 4.2;
     }
-  }
-  &__name {
-    font-size: 24px;
-    font-weight: 600;
   }
   &:hover &__logo {
     animation: wiggle 0.5s var(--ease-pop);
+  }
+  &__name {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--p-text);
   }
 }
 
@@ -99,24 +95,26 @@
   place-items: center;
   width: 44px;
   height: 44px;
-  border: var(--edge) solid var(--line);
+  border: var(--edge) solid var(--line-strong);
   border-bottom-width: var(--lip);
   border-radius: var(--r-sm);
   background: var(--card);
-  color: var(--heading);
+  color: var(--muted);
   cursor: pointer;
-  transition: transform 0.16s var(--ease-out);
+  transition: transform 0.12s var(--ease-out);
   &:hover {
-    transform: translateY(-2px);
+    color: var(--heading);
   }
   &:active {
     transform: translateY(3px);
-    border-bottom-width: 1px;
+    border-bottom-width: var(--edge);
   }
 }
 
 .main {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .foot {
@@ -152,5 +150,18 @@
   }
   60% {
     transform: rotate(6deg) scale(1.06);
+  }
+}
+
+@media (max-width: 560px) {
+  .foot__in {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .foot__dot {
+    display: none;
+  }
+  .brand__name {
+    font-size: 24px;
   }
 }

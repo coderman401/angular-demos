@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { LocalStorageService, ThemeService } from 'common-library';
+import { SoundService } from './services/sound.service';
 
 @Component({
   selector: 'app-root',
@@ -9,7 +10,11 @@ import { LocalStorageService, ThemeService } from 'common-library';
 export class AppComponent implements OnInit {
   title = 'tictactoe';
 
-  constructor(public themeService: ThemeService, private storage: LocalStorageService) { }
+  constructor(
+    public themeService: ThemeService,
+    public sound: SoundService,
+    private storage: LocalStorageService,
+  ) { }
 
   ngOnInit(): void {
     // First visit: follow the OS colour scheme. After that the saved choice wins.

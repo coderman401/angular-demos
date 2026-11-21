@@ -1,12 +1,10 @@
 @use "../../../dist/common-library/styles/index.scss";
 
 /*
-  TicTacToe design system
-  -----------------------
-  Same language as the Everyday Calculator: chunky "lip" buttons and cards,
-  2px borders, rounded corners, Fredoka + Nunito, light/dark tokens.
-  Brand colours come from the shared library: --color-primary (cyan) and
-  --color-secondary (lime).
+  TicTacToe design system: a storybook take on the Duolingo style reference.
+  Flat white paper, chunky rounded display type, sticker-like components with
+  2px borders, 12px corners and a solid "lip". Brand colours come from the
+  shared library: --color-primary (cyan, X) and --color-secondary (lime, O).
 */
 
 html {
@@ -21,40 +19,42 @@ body {
 
   // brand
   --p: var(--color-primary);
-  --p-lip: color-mix(in srgb, var(--color-primary) 70%, #000);
-  --p-soft: color-mix(in srgb, var(--color-primary) 14%, transparent);
-  --p-text: light-dark(#00778a, #5be6f7);
+  --p-lip: color-mix(in srgb, var(--color-primary) 72%, #000);
+  --p-wash: light-dark(#e3f8fb, #12343b);
+  --p-text: light-dark(#00788a, #5be6f7);
   --on-p: #03303a;
   --s: var(--color-secondary);
-  --s-lip: color-mix(in srgb, var(--color-secondary) 66%, #000);
-  --s-soft: color-mix(in srgb, var(--color-secondary) 20%, transparent);
-  --s-text: light-dark(#547000, var(--color-secondary));
+  --s-lip: color-mix(in srgb, var(--color-secondary) 70%, #000);
+  --s-wash: light-dark(#f1fccc, #27330d);
   --on-s: #1f2b00;
+  --danger: #ff4b4b;
+  --danger-lip: #ea2b2b;
+  --danger-wash: light-dark(#ffdfe0, #3d1f22);
+  --danger-text: light-dark(#d42c2c, #ff8a8a);
 
-  // neutrals
+  // neutrals (Charcoal / Pencil / Faded from the reference)
   --bg: light-dark(#ffffff, #131f24);
   --card: light-dark(#ffffff, #18262c);
-  --fill: light-dark(#f4f7f8, #202f36);
+  --fill: light-dark(#f7f7f7, #202f36);
   --line: light-dark(#e5e5e5, #2f414a);
-  --line-strong: light-dark(#cfcfcf, #4c6069);
-  --ink: light-dark(#3c3c3c, #e6edf0);
-  --heading: light-dark(#06323a, #ffffff);
-  --muted: light-dark(#6f7c80, #9fb1b8);
-  --danger: light-dark(#e03a3a, #ff7a7a);
+  --line-strong: light-dark(#afafaf, #52656e);
+  --heading: light-dark(#4b4b4b, #f1f7f9);
+  --ink: light-dark(#4b4b4b, #dce6ea);
+  --muted: light-dark(#777777, #9fb1b8);
 
   // shape + motion
   --edge: 2px;
   --lip: 4px;
   --r-sm: 12px;
   --r-md: 16px;
-  --r-lg: 22px;
+  --r-lg: 20px;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font: 500 15px/1.47 var(--font-ui);
+  font: 500 17px/1.4 var(--font-ui);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 
@@ -68,7 +68,7 @@ body {
   }
   .display {
     font-family: var(--font-display) !important;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
   }
 }
 
@@ -90,28 +90,19 @@ body {
   border: var(--edge) solid var(--line);
   border-bottom-width: var(--lip);
   border-radius: var(--r-lg);
-  padding: 20px;
+  padding: 24px;
 }
 
-.eyebrow {
-  margin: 0 0 6px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-/* ---------- buttons ---------- */
+/* ---------- buttons: uppercase, tracked, sticker-like ---------- */
 .btn {
-  --bg-c: var(--fill);
+  --bg-c: var(--card);
   --lip-c: var(--line-strong);
-  --fg: var(--heading);
+  --fg: var(--p-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 48px;
+  min-height: 50px;
   padding: 0 22px;
   border: 0;
   border-bottom: var(--lip) solid var(--lip-c);
@@ -120,9 +111,11 @@ body {
   color: var(--fg);
   font-size: 15px;
   font-weight: 800;
+  letter-spacing: 0.053em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: transform 0.16s var(--ease-out), filter 0.16s var(--ease-out);
   user-select: none;
+  transition: transform 0.12s var(--ease-out), filter 0.12s var(--ease-out);
 
   .mat-icon {
     font-size: 20px;
@@ -130,8 +123,7 @@ body {
     height: 20px;
   }
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    filter: brightness(1.04);
+    filter: brightness(1.05);
   }
   &:active:not(:disabled) {
     transform: translateY(3px);
@@ -140,7 +132,9 @@ body {
   }
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.55;
+    --bg-c: var(--line);
+    --lip-c: var(--line);
+    --fg: var(--muted);
   }
   &--primary {
     --bg-c: var(--p);
@@ -152,10 +146,14 @@ body {
     --lip-c: var(--s-lip);
     --fg: var(--on-s);
   }
-  &--ghost {
-    --bg-c: transparent;
-    --lip-c: var(--line);
-    border: var(--edge) solid var(--line);
+  &--danger {
+    --bg-c: var(--danger);
+    --lip-c: var(--danger-lip);
+    --fg: #fff;
+  }
+  // outlined: 2px Faded Gray border, brand text (reference: "outlined account button")
+  &--outline {
+    border: var(--edge) solid var(--line-strong);
     border-bottom-width: var(--lip);
   }
   &--block {
@@ -163,38 +161,35 @@ body {
   }
   &--sm {
     min-height: 40px;
-    padding: 0 16px;
-    font-size: 14px;
+    padding: 0 14px;
+    font-size: 13px;
   }
 }
 
-/* ---------- segmented control ---------- */
+/* ---------- segmented control (nav pills) ---------- */
 .seg {
   display: inline-flex;
   max-width: 100%;
-  padding: 4px;
-  gap: 4px;
-  border: var(--edge) solid var(--line);
-  border-bottom-width: var(--lip);
-  border-radius: var(--r-md);
-  background: var(--card);
-  overflow-x: auto;
+  gap: 8px;
 
   &__btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    min-height: 44px;
-    padding: 0 18px;
-    border: 0;
-    border-radius: calc(var(--r-md) - 4px);
-    background: transparent;
+    min-height: 46px;
+    padding: 0 16px;
+    border: var(--edge) solid var(--line);
+    border-bottom-width: var(--lip);
+    border-radius: var(--r-sm);
+    background: var(--card);
     color: var(--muted);
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 800;
+    letter-spacing: 0.053em;
+    text-transform: uppercase;
     white-space: nowrap;
     cursor: pointer;
-    transition: background-color 0.2s var(--ease-out), color 0.2s var(--ease-out), transform 0.16s var(--ease-out);
+    transition: transform 0.12s var(--ease-out), color 0.15s var(--ease-out);
 
     .mat-icon {
       font-size: 20px;
@@ -203,36 +198,39 @@ body {
     }
     &:hover {
       color: var(--heading);
-      background: var(--fill);
+    }
+    &:active {
+      transform: translateY(3px);
+      border-bottom-width: var(--edge);
     }
     &.on {
-      background: var(--p);
-      color: var(--on-p);
-      box-shadow: 0 3px 0 var(--p-lip);
+      border-color: var(--p);
+      background: var(--p-wash);
+      color: var(--p-text);
     }
   }
   &--sm &__btn {
-    min-height: 36px;
-    padding: 0 14px;
-    font-size: 14px;
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: 13px;
   }
-  &--sm.seg--lime &__btn.on {
-    background: var(--s);
-    color: var(--on-s);
-    box-shadow: 0 3px 0 var(--s-lip);
+  &--lime &__btn.on {
+    border-color: var(--s-lip);
+    background: var(--s-wash);
+    color: light-dark(#4d6600, var(--s));
   }
 }
 
 /* ---------- form fields ---------- */
 .field {
   display: block;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 
   &__label {
     display: block;
     margin-bottom: 6px;
-    font-size: 13px;
-    font-weight: 800;
+    font-size: 15px;
+    font-weight: 700;
     color: var(--heading);
   }
   &__input {
@@ -242,41 +240,39 @@ body {
     padding: 0 16px;
     border: var(--edge) solid var(--line);
     border-radius: var(--r-sm);
-    background: var(--card);
+    background: var(--fill);
     color: var(--heading);
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 700;
-    transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+    transition: border-color 0.15s var(--ease-out), background-color 0.15s var(--ease-out);
 
     &::placeholder {
       color: var(--muted);
-      font-weight: 600;
-    }
-    &:hover {
-      border-color: var(--line-strong);
+      font-weight: 500;
     }
     &:focus {
       outline: none;
       border-color: var(--p);
-      box-shadow: 0 0 0 4px var(--p-soft);
+      background: var(--card);
     }
     &.is-invalid {
       border-color: var(--danger);
     }
     &--code {
       text-transform: uppercase;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.2em;
     }
   }
   &__error {
-    margin: 4px 2px 0;
-    font-size: 12.5px;
+    display: block;
+    margin: 6px 2px 0;
+    font-size: 14px;
     font-weight: 700;
-    color: var(--danger);
+    color: var(--danger-text);
   }
 }
 
-/* ---------- Material overrides (dialogs, snackbar) ---------- */
+/* ---------- Material overrides (stats dialog, snackbar) ---------- */
 .mat-dialog-container {
   background: var(--card) !important;
   color: var(--ink) !important;
@@ -284,15 +280,20 @@ body {
   border-bottom-width: var(--lip);
   border-radius: var(--r-lg) !important;
   box-shadow: none !important;
-  padding: 24px !important;
+  padding: 20px !important;
 
   .mat-dialog-title,
   h1 {
-    font-family: var(--font-display) !important;
+    margin: 0 0 12px !important;
+    font-family: var(--font-ui) !important;
     color: var(--heading);
-    font-weight: 600 !important;
-    font-size: 28px !important;
-    letter-spacing: -0.01em;
+    font-weight: 800 !important;
+    font-size: 21px !important;
+    line-height: 1.25 !important;
+  }
+  .mat-dialog-content {
+    margin: 0;
+    padding: 0;
   }
   .mat-dialog-actions {
     padding: 8px 0 0;
@@ -300,15 +301,17 @@ body {
   }
   .mat-raised-button,
   .mat-button-base.mat-raised-button {
-    min-height: 44px;
-    padding: 0 28px;
+    min-height: 40px;
+    padding: 0 24px;
+    font-size: 13px;
     border-radius: var(--r-sm);
     border-bottom: var(--lip) solid var(--p-lip);
     background: var(--p);
     color: var(--on-p);
     font-weight: 800;
+    letter-spacing: 0.053em;
+    text-transform: uppercase;
     box-shadow: none;
-    transition: transform 0.16s var(--ease-out);
     &:active {
       transform: translateY(3px);
       border-bottom-width: 1px;
@@ -316,29 +319,29 @@ body {
   }
 }
 .cdk-overlay-dark-backdrop {
-  background: rgba(6, 29, 33, 0.55);
+  background: rgba(20, 20, 20, 0.5);
 }
 .mat-snack-bar-container {
   background: var(--heading) !important;
   color: var(--bg) !important;
-  border-bottom: var(--lip) solid var(--p-lip);
   border-radius: var(--r-sm) !important;
+  box-shadow: none !important;
   font-weight: 700;
   min-height: 0 !important;
 }
 
 @media (max-width: 560px) {
   .modes .seg {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     width: 100%;
-    overflow: visible;
     &__btn {
-      flex: 1;
       flex-direction: column;
       justify-content: center;
       gap: 2px;
-      min-height: 58px;
-      padding: 0 4px;
-      font-size: 13px;
+      min-height: 62px;
+      padding: 6px 4px;
+      font-size: 12px;
       line-height: 1.15;
       text-align: center;
       white-space: normal;

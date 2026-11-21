@@ -1,9 +1,7 @@
-<div class="wrap game">
+<div class="wrap game" [class.game--rail]="hasRail">
 
-  <header class="hero">
-    <h1 class="display hero__title">Tic Tac Toe</h1>
-    <p class="hero__sub">{{ subtitle }}</p>
-  </header>
+  <header class="head">
+  <h1 class="display title">Tic Tac Toe</h1>
 
   <!-- Mode -->
   <div class="modes">
@@ -14,154 +12,153 @@
       </button>
     </div>
   </div>
+  </header>
 
-  <!-- Connection status (online mode only) -->
-  <div class="notice" *ngIf="player === 'friend' && online.connection !== 'connected'" role="status">
-    <span class="notice__dot"></span>
-    <ng-container [ngSwitch]="online.connection">
-      <span *ngSwitchCase="'connecting'">Connecting to the game server…</span>
-      <span *ngSwitchCase="'reconnecting'">Connection lost. Reconnecting, your game is safe…</span>
-      <span *ngSwitchCase="'offline'">Game server unreachable. Retrying…</span>
-      <span *ngSwitchDefault>Not connected</span>
-    </ng-container>
-  </div>
+  <div class="play" [class.play--lobby]="player === 'friend' && !room">
+  <div class="play__main">
 
-  <!-- Lobby: create or join -->
-  <div class="lobby" *ngIf="player === 'friend' && !room">
-    <section class="card">
-      <p class="eyebrow">Player 1</p>
-      <h2 class="display card__title">Create a game</h2>
-      <label class="field">
-        <span class="field__label">Your name</span>
-        <input class="field__input" placeholder="e.g. Alex" maxlength="24" autocomplete="nickname"
-          [class.is-invalid]="userCreate.touched && userCreate.invalid" [formControl]="userCreate"
-          (keyup.enter)="createGame()">
-        <span class="field__error" *ngIf="userCreate.touched && userCreate.invalid">Please enter your name.</span>
-      </label>
-      <button type="button" class="btn btn--primary btn--block" [disabled]="busy || !connected" (click)="createGame()">
-        <mat-icon>add_circle</mat-icon>Create game
-      </button>
-    </section>
-
-    <section class="card">
-      <p class="eyebrow">Player 2</p>
-      <h2 class="display card__title">Join a game</h2>
-      <label class="field">
-        <span class="field__label">Your name</span>
-        <input class="field__input" placeholder="e.g. Sam" maxlength="24" autocomplete="nickname"
-          [class.is-invalid]="userJoin.touched && userJoin.invalid" [formControl]="userJoin">
-        <span class="field__error" *ngIf="userJoin.touched && userJoin.invalid">Please enter your name.</span>
-      </label>
-      <label class="field">
-        <span class="field__label">Room code</span>
-        <input class="field__input field__input--code" placeholder="K7QF2M" maxlength="16" autocomplete="off"
-          [class.is-invalid]="roomId.touched && roomId.invalid" [formControl]="roomId" (keyup.enter)="joinGame()">
-        <span class="field__error" *ngIf="roomId.touched && roomId.invalid">Please enter the room code.</span>
-      </label>
-      <button type="button" class="btn btn--secondary btn--block" [disabled]="busy || !connected" (click)="joinGame()">
-        <mat-icon>login</mat-icon>Join game
-      </button>
-    </section>
-
-    <section class="card how">
-      <p class="eyebrow">How it works</p>
-      <ol class="how__list">
-        <li><b>1</b><span>Player 1 creates a game and shares the room code or invite link.</span></li>
-        <li><b>2</b><span>Player 2 joins with the code. The match starts right away.</span></li>
-        <li><b>3</b><span>Keep playing: every new round starts automatically.</span></li>
-      </ol>
-    </section>
-  </div>
-
-  <!-- Game -->
-  <div class="layout" *ngIf="player !== 'friend' || room as r">
-    <section class="card stage">
-
-      <!-- status pill -->
-      <div class="pill" [class.pill--win]="finished && room?.winner === you" role="status" aria-live="polite">
-        <ng-container *ngIf="player === 'single'">
-          <ttt-mark type="O"></ttt-mark> You <span class="pill__sep">vs</span> <ttt-mark type="X"></ttt-mark> Computer
-        </ng-container>
-        <ng-container *ngIf="player === 'two'">
-          <ttt-mark [type]="gameService.xIsNext ? 'X' : 'O'"></ttt-mark>
-          Player {{ gameService.xIsNext ? 'X' : 'O' }}'s turn
-        </ng-container>
-        <ng-container *ngIf="player === 'friend' && room">
-          <ttt-mark *ngIf="room.status === 'playing'" [type]="room.turn"></ttt-mark>
-          <span>{{ statusMessage }}</span>
-          <span class="pill__round" *ngIf="bothJoined">Round {{ room.round }}</span>
-        </ng-container>
-      </div>
-
-      <div class="stage__board">
-        <ng-container *ngIf="player !== 'friend'">
-          <board [squares]="gameService.squares" (cellClick)="onLocalCellClick($event)"></board>
-        </ng-container>
-
-        <ng-container *ngIf="player === 'friend' && room as rm">
-          <board [squares]="rm.board" [winLine]="rm.line" [disabled]="boardLocked"
-            (cellClick)="onOnlineCellClick($event)"></board>
-
-          <!-- Invite: shown only until the second player joins -->
-          <div class="invite" *ngIf="!bothJoined">
-            <p class="eyebrow">Room code</p>
-            <div class="invite__code display" aria-label="Room code">{{ rm.id }}</div>
-            <div class="invite__actions">
-              <button type="button" class="btn btn--primary" (click)="copyRoomCode()">
-                <mat-icon>content_copy</mat-icon>Copy code
-              </button>
-              <button type="button" class="btn btn--secondary" (click)="copyInviteLink()">
-                <mat-icon>link</mat-icon>Copy invite link
-              </button>
-            </div>
-            <p class="invite__wait"><span class="notice__dot"></span>Waiting for your friend to join…</p>
-          </div>
-        </ng-container>
-      </div>
-
-      <!-- auto-restart countdown -->
-      <div class="countdown" *ngIf="player === 'friend' && finished && room?.nextRoundInMs !== null" aria-hidden="true">
-        <span class="countdown__bar" [style.animation-duration.ms]="room?.nextRoundInMs"></span>
-      </div>
-    </section>
-
-    <aside class="side">
-      <section class="card score" aria-label="Scoreboard">
-        <p class="eyebrow">Scoreboard</p>
-        <div class="score__row x">
-          <span class="score__mark"><ttt-mark type="X"></ttt-mark></span>
-          <span class="score__name">{{ xLabel }}<i class="dot" *ngIf="player === 'friend' && room?.players?.X"
-              [class.off]="!playerOnline('X')" [attr.title]="playerOnline('X') ? 'Online' : 'Offline'"></i></span>
-          <b class="score__n display">{{ xScore }}</b>
+    <!-- Match strip: who is playing, the score and whose turn it is -->
+    <section class="match" aria-label="Score" *ngIf="player !== 'friend' || room">
+      <ng-container *ngFor="let m of ['X', 'O']">
+        <div *ngIf="side($any(m)) as s" class="match__side" [class.o]="m === 'O'" [class.turn]="s.turn"
+          [class.offline]="s.offline">
+          <span class="avatar" [class.avatar--o]="m === 'O'" [class.avatar--tic]="player === 'single' && m === 'X'"
+            aria-hidden="true">
+            <ttt-mascot *ngIf="player === 'single' && m === 'X'; else glyph" [mood]="speech.mood"></ttt-mascot>
+            <ng-template #glyph><ttt-mark [type]="m"></ttt-mark></ng-template>
+          </span>
+          <span class="match__who">
+            <b>{{ s.name }}</b>
+            <small>{{ s.note }}</small>
+          </span>
+          <span class="match__score" [attr.aria-label]="s.name + ' ' + s.score + ' wins'">{{ s.score }}</span>
         </div>
-        <div class="score__row o">
-          <span class="score__mark"><ttt-mark type="O"></ttt-mark></span>
-          <span class="score__name">{{ oLabel }}<i class="dot" *ngIf="player === 'friend' && room?.players?.O"
-              [class.off]="!playerOnline('O')" [attr.title]="playerOnline('O') ? 'Online' : 'Offline'"></i></span>
-          <b class="score__n display">{{ oScore }}</b>
+        <div class="match__mid" *ngIf="m === 'X'">
+          <span class="match__round" *ngIf="player === 'friend' && bothJoined">Round {{ room?.round }}</span>
+          <span class="match__draws">{{ draws }} {{ draws === 1 ? 'draw' : 'draws' }}</span>
         </div>
-        <div class="score__row d">
-          <span class="score__mark score__mark--draw">=</span>
-          <span class="score__name">Draws</span>
-          <b class="score__n display">{{ drawScore }}</b>
-        </div>
-        <button type="button" class="btn btn--ghost btn--sm btn--block" *ngIf="player !== 'friend'" (click)="viewStats()">
-          <mat-icon>bar_chart</mat-icon>View all stats
+      </ng-container>
+    </section>
+
+<!-- Connection banner (online) -->
+<div class="conn" *ngIf="player === 'friend' && online.connection !== 'connected'" role="status">
+  <span class="conn__dot"></span>
+  <ng-container [ngSwitch]="online.connection">
+    <span *ngSwitchCase="'connecting'">Connecting to the game server…</span>
+    <span *ngSwitchCase="'reconnecting'">Connection lost. Reconnecting…</span>
+    <span *ngSwitchCase="'offline'">Can't reach the game server. Retrying…</span>
+    <span *ngSwitchDefault>Not connected</span>
+  </ng-container>
+</div>
+
+    <!-- Mascot -->
+    <div class="buddy" aria-live="polite">
+      <ttt-mascot [mood]="speech.mood"></ttt-mascot>
+      <p class="buddy__bubble" role="status">{{ speech.text }}</p>
+    </div>
+
+    <!-- Lobby: start or join an online game -->
+    <div class="lobby" *ngIf="player === 'friend' && !room">
+      <section class="card">
+        <h2 class="card__title">Start a game</h2>
+        <p class="card__text">You'll get a code to send to your friend.</p>
+        <label class="field">
+          <span class="field__label">Your name</span>
+          <input class="field__input" placeholder="e.g. Alex" maxlength="24" autocomplete="nickname"
+            [class.is-invalid]="userCreate.touched && userCreate.invalid" [formControl]="userCreate"
+            (keyup.enter)="createGame()">
+          <span class="field__error" *ngIf="userCreate.touched && userCreate.invalid">Enter your name so your friend knows it's you.</span>
+        </label>
+        <button type="button" class="btn btn--primary btn--block" [disabled]="busy || !connected" (click)="createGame()">
+          Start game
         </button>
       </section>
 
-      <section class="card" *ngIf="player === 'single'">
-        <p class="eyebrow">Difficulty</p>
-        <div class="seg seg--sm seg--lime" role="group" aria-label="Difficulty">
-          <button *ngFor="let d of difficulties" type="button" class="seg__btn" [class.on]="difficulty === d.value"
-            [attr.aria-pressed]="difficulty === d.value" (click)="setDifficulty(d.value)">{{ d.label }}</button>
-        </div>
+      <section class="card">
+        <h2 class="card__title">Join a friend</h2>
+        <p class="card__text">Got a code? Enter it here.</p>
+        <label class="field">
+          <span class="field__label">Your name</span>
+          <input class="field__input" placeholder="e.g. Sam" maxlength="24" autocomplete="nickname"
+            [class.is-invalid]="userJoin.touched && userJoin.invalid" [formControl]="userJoin">
+          <span class="field__error" *ngIf="userJoin.touched && userJoin.invalid">Enter your name.</span>
+        </label>
+        <label class="field">
+          <span class="field__label">Room code</span>
+          <input class="field__input field__input--code" placeholder="K7QF2M" maxlength="16" autocomplete="off"
+            [class.is-invalid]="roomId.touched && roomId.invalid" [formControl]="roomId" (keyup.enter)="joinGame()">
+          <span class="field__error" *ngIf="roomId.touched && roomId.invalid">Enter the 6-letter code from your friend.</span>
+        </label>
+        <button type="button" class="btn btn--secondary btn--block" [disabled]="busy || !connected" (click)="joinGame()">
+          Join game
+        </button>
       </section>
+    </div>
 
-      <button type="button" class="btn btn--ghost btn--block" *ngIf="player === 'friend' && room" (click)="leaveRoom()">
-        <mat-icon>logout</mat-icon>Leave room
+    <!-- Invite: only until the second player joins -->
+    <section class="invite card" *ngIf="player === 'friend' && room && !bothJoined">
+      <h2 class="card__title">Your room code</h2>
+      <button type="button" class="invite__code display" (click)="copyRoomCode()" [attr.aria-label]="'Room code ' + room.id + '. Copy'">
+        {{ room.id }}
       </button>
-    </aside>
+      <div class="invite__actions">
+        <button *ngIf="canShare" type="button" class="btn btn--primary" (click)="shareInvite()">
+          <mat-icon>ios_share</mat-icon>Share invite
+        </button>
+        <button type="button" class="btn" [class.btn--primary]="!canShare" [class.btn--outline]="canShare" (click)="copyInviteLink()">
+          <mat-icon>{{ copied === 'link' ? 'check' : 'link' }}</mat-icon>{{ copied === 'link' ? 'Link copied' : 'Copy invite link' }}
+        </button>
+        <button type="button" class="btn btn--outline" (click)="copyRoomCode()">
+          <mat-icon>{{ copied === 'code' ? 'check' : 'content_copy' }}</mat-icon>{{ copied === 'code' ? 'Code copied' : 'Copy code' }}
+        </button>
+      </div>
+    </section>
+
+    <!-- Board -->
+    <ng-container *ngIf="player !== 'friend'">
+      <board [squares]="gameService.squares" [winLine]="gameService.result?.line ?? []" [disabled]="gameService.locked"
+        [lastMove]="gameService.lastMove" [ghost]="ghost" (cellClick)="onLocalCellClick($event)"></board>
+    </ng-container>
+    <ng-container *ngIf="player === 'friend' && room && bothJoined">
+      <board class="pop" [squares]="room.board" [winLine]="room.line" [disabled]="boardLocked" [lastMove]="onlineLastMove"
+        [ghost]="ghost" (cellClick)="onOnlineCellClick($event)"></board>
+    </ng-container>
+
   </div>
 
+  <!-- Side column on desktop and tablet; sits under the board on phones -->
+  <aside class="play__side" *ngIf="player !== 'friend' || room" aria-label="Game options">
+    <section class="side-card" *ngIf="player === 'single'">
+      <h2 class="side-card__title">Difficulty</h2>
+      <div class="seg seg--sm seg--lime" role="group" aria-label="Difficulty">
+        <button *ngFor="let d of difficulties" type="button" class="seg__btn" [class.on]="difficulty === d.value"
+          [attr.aria-pressed]="difficulty === d.value" (click)="setDifficulty(d.value)">{{ d.label }}</button>
+      </div>
+    </section>
+    <button type="button" class="btn btn--sm btn--outline side-btn" *ngIf="player !== 'friend'" (click)="viewStats()">
+      <mat-icon>bar_chart</mat-icon>Stats
+    </button>
+    <button type="button" class="btn btn--sm btn--outline side-btn" *ngIf="player === 'friend' && room" (click)="leaveRoom()">
+      <mat-icon>logout</mat-icon>Leave room
+    </button>
+    <p class="hint" *ngIf="player !== 'friend' || bothJoined">Tip: press 1–9 to play a square, 1 is top left.</p>
+  </aside>
+  </div>
+  <div class="toast-spacer" *ngIf="sheet" aria-hidden="true"></div>
 </div>
+
+<!-- Round result: a small toast, not a full-width sheet -->
+<div class="toast" *ngIf="sheet as sh" [ngClass]="'toast--' + sh.tone" role="alertdialog" aria-live="assertive"
+  [attr.aria-label]="sh.title">
+  <span class="toast__badge" aria-hidden="true">
+    <mat-icon>{{ sh.tone === 'win' ? 'emoji_events' : sh.tone === 'lose' ? 'close' : 'drag_handle' }}</mat-icon>
+  </span>
+  <div class="toast__copy">
+    <p class="toast__title">{{ sh.title }}</p>
+    <p class="toast__text" *ngIf="sh.text">{{ sh.text }}</p>
+  </div>
+  <span class="toast__count" *ngIf="secondsLeft !== null">Next round in {{ secondsLeft }}</span>
+  <span class="toast__bar" *ngIf="roundPauseMs > 0" aria-hidden="true"><i [style.animation-duration.ms]="roundPauseMs"></i></span>
+</div>
+
+<ttt-confetti [fire]="confetti"></ttt-confetti>

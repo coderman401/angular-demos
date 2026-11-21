@@ -5,7 +5,7 @@ describe('BoardComponent', () => {
   let emitted: number[];
 
   beforeEach(() => {
-    board = new BoardComponent();
+    board = new BoardComponent({ nativeElement: document.createElement('div') } as any);
     emitted = [];
     board.cellClick.subscribe((i) => emitted.push(i));
   });

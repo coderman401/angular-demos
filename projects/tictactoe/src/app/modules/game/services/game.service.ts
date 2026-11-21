@@ -1,48 +1,62 @@
-// modules
 import { Injectable } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { LocalStorageService } from 'common-library';
 
-// components
-
-// services
+import { WinningCount } from '../models/winning-count.model';
 import { AlgorithmService } from './algorithm.service';
 
-// models
-import { WinningCount } from '../models/winning-count.model';
-import { LocalStorageService, ModalService } from 'common-library';
+export type LocalMark = 'X' | 'O';
 
+/** Outcome of a finished local round. The board stays visible until `nextRound()`. */
+export interface LocalResult {
+  winner: LocalMark | 'draw';
+  line: number[];
+}
+
+const AI_THINK_MS = 450;
+/** How long a finished local round stays on screen before the next one starts by itself. */
+export const LOCAL_ROUND_PAUSE_MS = 3000;
+
+/**
+ * Local play: "single" (you are O, the computer is X) and "two" (pass and play).
+ * Online play is server-authoritative and lives in SocketService.
+ */
 @Injectable({
   providedIn: 'root'
 })
-
 export class GameService {
 
-  // vars
-  private _squares = Array(9).fill('');
+  private _squares: string[] = Array(9).fill('');
   private _xIsNext = true;
   private _player = 'single';
   private _difficulty = 'expert';
-  private winnerData: any;
   private _winningCount = new WinningCount();
+  private aiTimer?: ReturnType<typeof setTimeout>;
+  private roundTimer?: ReturnType<typeof setTimeout>;
+  /** Who opens the next two-player round; alternates every round. */
+  private twoPlayerStarter: LocalMark = 'X';
 
-  lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
+  result: LocalResult | null = null;
+  aiThinking = false;
+  /** Local timestamp (ms) when the next round starts; set while a result is showing. */
+  nextRoundAt: number | null = null;
+  /** Called when a local round restarts by itself (sound, reset of UI-only state). */
+  onAutoRestart?: () => void;
+  lastMove: number | null = null;
+  /** Current run of wins for "You" in single player (persisted). */
+  streak = 0;
+
+  readonly lines = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6],
   ];
 
   constructor(
-    public dialog: MatDialog,
     private localStorageService: LocalStorageService,
-    private modalService: ModalService,
     private AIService: AlgorithmService,
   ) {
     this.setWinnerCounts();
+    this.streak = Number(this.localStorageService.getItem('xo.streak')) || 0;
   }
 
   //#region getters-setters
@@ -62,110 +76,124 @@ export class GameService {
   get difficulty(): string { return this._difficulty; }
   set difficulty(value: string) { this._difficulty = value; }
 
+  /** True when a click on the board should be ignored. */
+  get locked(): boolean { return !!this.result || this.aiThinking; }
+
   //#endregion getters-setters
 
   setWinnerCounts() {
-    if (this.localStorageService.getItem('winningCount')) {
-      this.winningCount = this.localStorageService.getItem('winningCount');
+    const saved = this.localStorageService.getItem('winningCount');
+    if (saved) {
+      this.winningCount = saved;
     } else {
       this.localStorageService.setItem('winningCount', this.winningCount);
     }
   }
 
-  calculateWinner(squares: any) {
-    // tslint:disable-next-line: prefer-for-of
-    for (let i = 0; i < this.lines.length; i++) {
-      const [a, b, c] = this.lines[i];
+  calculateWinner(squares: string[]) {
+    for (const [a, b, c] of this.lines) {
       if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        return {
-          winner: squares[a],
-          line: [a, b, c]
-        };
+        return { winner: squares[a], line: [a, b, c] };
       }
     }
     return null;
   }
 
-  updateSquare(index: number, winnerData: any) {
-    // for two player
+  /** Plays a human move. Returns the mark placed, or null if the move was ignored. */
+  updateSquare(index: number): LocalMark | null {
+    if (this.locked || this.squares[index]) {
+      return null;
+    }
+
     if (this.player === 'two') {
-      if (winnerData || this.squares[index]) {
-        return;
-      }
-      this.squares[index] = this.xIsNext ? 'X' : 'O';
+      const mark: LocalMark = this.xIsNext ? 'X' : 'O';
+      this.place(index, mark);
       this.xIsNext = !this.xIsNext;
+      this.evaluate();
+      return mark;
     }
 
-    // for single player
     if (this.player === 'single') {
-      if (winnerData || this.squares[index]) {
-        return;
+      this.place(index, 'O');
+      if (this.evaluate()) {
+        return 'O';
       }
-      this.squares[index] = 'O';
-      setTimeout(() => {
-        const AIIndex = this.AIService.findBestMove(this.squares, this.difficulty);
-        if (AIIndex !== -4) {
-          this.squares[AIIndex] = 'X';
+      this.aiThinking = true;
+      this.aiTimer = setTimeout(() => {
+        this.aiThinking = false;
+        const aiIndex = this.AIService.findBestMove(this.squares, this.difficulty);
+        if (aiIndex >= 0 && !this.squares[aiIndex]) {
+          this.place(aiIndex, 'X');
         }
-      }, 100);
+        this.evaluate();
+        this.onAiMove?.(aiIndex);
+      }, AI_THINK_MS);
+      return 'O';
     }
-
-    // Online play ("friend") is server-authoritative and handled by SocketService.
-    setTimeout(() => {
-      this.checkForWinner(this.squares);
-    }, 200);
+    return null;
   }
 
-  checkForWinner(square: string[]) {
-    this.winnerData = this.calculateWinner(square);
-    let winnerPlayer: string;
-    if (this.winnerData) {
-      winnerPlayer = this.winnerData.winner.toUpperCase();
+  /** Optional hook so the UI can react (sound, focus) when the computer has moved. */
+  onAiMove?: (index: number) => void;
 
-      // for single player
-      if (this.player === 'single') {
-        if (winnerPlayer === 'X') {
-          winnerPlayer = 'AI';
-          this.winningCount.one.xWins += 1;
-          this.xIsNext = true;
-        } else {
-          winnerPlayer = 'You';
-          this.winningCount.one.oWins += 1;
-          this.xIsNext = false;
-        }
-      }
-      // for two player
-      if (this.player === 'two') {
-        if (winnerPlayer === 'X') {
-          this.winningCount.two.xWins += 1;
-          this.xIsNext = true;
-        } else {
-          this.winningCount.two.oWins += 1;
-          this.xIsNext = false;
-        }
-      }
-
-      this.localStorageService.setItem('winningCount', this.winningCount);
-      this.modalService.openAlert(winnerPlayer + ' Won');
-      this.resetGame();
-
-    } else if (!square.includes('')) {
-      // game draw
-      if (this.player === 'single') {
-        this.winningCount.one.draw += 1;
-      }
-      if (this.player === 'two') {
-        this.winningCount.two.draw += 1;
-      }
-      this.localStorageService.setItem('winningCount', this.winningCount);
-      this.modalService.openAlert('Game Draw !!!');
-      this.resetGame();
+  /** Starts the next local round (called automatically after the pause). */
+  nextRound() {
+    if (this.player === 'two') {
+      this.twoPlayerStarter = this.twoPlayerStarter === 'X' ? 'O' : 'X';
+      this.xIsNext = this.twoPlayerStarter === 'X';
+    } else {
+      this.xIsNext = false; // single player: you always open
     }
+    this.clearBoard();
   }
 
+  /** Clears the board when switching modes or difficulty (no score change). */
   resetGame() {
-    this.winnerData = null;
+    this.twoPlayerStarter = 'X';
+    this.clearBoard();
+  }
+
+  private clearBoard() {
+    if (this.aiTimer) clearTimeout(this.aiTimer);
+    if (this.roundTimer) clearTimeout(this.roundTimer);
+    this.roundTimer = undefined;
+    this.nextRoundAt = null;
+    this.aiThinking = false;
+    this.result = null;
+    this.lastMove = null;
     this.squares = Array(9).fill('');
+  }
+
+  private place(index: number, mark: LocalMark) {
+    this.squares[index] = mark;
+    this.lastMove = index;
+  }
+
+  /** Records a finished round. Returns true if the round is over. */
+  private evaluate(): boolean {
+    const win = this.calculateWinner(this.squares);
+    const full = !this.squares.includes('');
+    if (!win && !full) {
+      return false;
+    }
+    const winner = (win?.winner ?? 'draw') as LocalMark | 'draw';
+    const bucket = this.player === 'single' ? this.winningCount.one : this.winningCount.two;
+    if (winner === 'X') bucket.xWins += 1;
+    else if (winner === 'O') bucket.oWins += 1;
+    else bucket.draw += 1;
+    this.localStorageService.setItem('winningCount', this.winningCount);
+
+    if (this.player === 'single') {
+      this.streak = winner === 'O' ? this.streak + 1 : 0;
+      this.localStorageService.setItem('xo.streak', this.streak);
+    }
+    this.result = { winner, line: win?.line ?? [] };
+    this.nextRoundAt = Date.now() + LOCAL_ROUND_PAUSE_MS;
+    this.roundTimer = setTimeout(() => {
+      this.nextRound();
+      this.onAutoRestart?.();
+    }, LOCAL_ROUND_PAUSE_MS);
+    return true;
   }
 
 }
