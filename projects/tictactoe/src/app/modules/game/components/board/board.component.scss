@@ -1,79 +1,135 @@
 :host {
   display: block;
-  width: min(100%, 440px);
+  width: min(100%, 420px);
   margin-inline: auto;
 }
 
 .grid {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: clamp(8px, 2.4vw, 14px);
+  gap: 3%;
 }
 
 .tile {
-  --t-bg: var(--fill);
-  --t-lip: var(--line-strong);
+  --t-bg: var(--card);
+  --t-edge: var(--line);
   --t-fg: var(--heading);
+  position: relative;
   aspect-ratio: 1;
   display: grid;
   place-items: center;
   padding: 0;
-  border: 0;
-  border-bottom: 6px solid var(--t-lip);
+  border: var(--edge) solid var(--t-edge);
+  border-bottom-width: 6px;
   border-radius: var(--r-md);
   background: var(--t-bg);
   color: var(--t-fg);
-  font-size: clamp(44px, 14vw, 76px);
+  font-size: clamp(44px, 14vw, 72px);
   cursor: pointer;
-  transition: transform 0.18s var(--ease-out), opacity 0.3s var(--ease-out), filter 0.18s var(--ease-out);
+  transition: transform 0.14s var(--ease-out), opacity 0.3s var(--ease-out), background-color 0.15s var(--ease-out);
 
   &:hover:not(.x):not(.o) {
-    transform: translateY(-3px);
-    filter: brightness(1.03);
+    background: var(--fill);
   }
   &:active:not(.x):not(.o) {
     transform: translateY(4px);
-    border-bottom-width: 2px;
+    border-bottom-width: var(--edge);
     transition-duration: 0.05s;
   }
   &.x {
     --t-bg: var(--p);
-    --t-lip: var(--p-lip);
+    --t-edge: var(--p-lip);
     --t-fg: var(--on-p);
     cursor: default;
   }
   &.o {
     --t-bg: var(--s);
-    --t-lip: var(--s-lip);
+    --t-edge: var(--s-lip);
     --t-fg: var(--on-s);
     cursor: default;
   }
   &.win {
-    animation: win 0.7s var(--ease-pop) both;
-    box-shadow: 0 0 0 4px var(--bg), 0 0 0 7px var(--heading);
+    animation: win 0.6s var(--ease-pop) 0.3s both;
   }
   &.dim {
-    opacity: 0.45;
+    opacity: 0.35;
   }
+  // the opponent's (or computer's) most recent move
+  &.last::after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.55;
+  }
+  &:focus-visible {
+    outline: 3px solid var(--heading);
+    outline-offset: 3px;
+  }
+}
+
+.ghost {
+  opacity: 0;
+  color: var(--line-strong);
+  transition: opacity 0.12s var(--ease-out);
+}
+.tile:hover .ghost,
+.tile:focus-visible .ghost {
+  opacity: 1;
 }
 
 .locked .tile:not(.x):not(.o) {
   cursor: not-allowed;
   &:hover {
+    background: var(--t-bg);
+  }
+  &:active {
     transform: none;
-    filter: none;
+    border-bottom-width: 6px;
   }
 }
 
+.strike {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+
+  line {
+    fill: none;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: strike 0.35s var(--ease-out) forwards;
+  }
+  &__under {
+    stroke: var(--bg);
+    stroke-width: 4.6;
+  }
+  &__line {
+    stroke: var(--heading);
+    stroke-width: 2.4;
+  }
+}
+
+@keyframes strike {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
 @keyframes win {
   0% {
     transform: scale(1);
   }
-  40% {
-    transform: scale(1.05) rotate(-2deg);
-  }
-  70% {
-    transform: scale(0.98) rotate(1deg);
+  45% {
+    transform: scale(1.06) translateY(-4px);
   }
   100% {
     transform: scale(1);

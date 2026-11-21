@@ -7,6 +7,8 @@ import { StateTableComponent } from './components/state-table/state-table.compon
 import { CommonLibraryModule } from 'common-library';
 import { BoardComponent } from './components/board/board.component';
 import { MarkComponent } from './components/mark/mark.component';
+import { MascotComponent } from './components/mascot/mascot.component';
+import { ConfettiComponent } from './components/confetti/confetti.component';
 
 
 @NgModule({
@@ -15,6 +17,8 @@ import { MarkComponent } from './components/mark/mark.component';
     StateTableComponent,
     BoardComponent,
     MarkComponent,
+    MascotComponent,
+    ConfettiComponent,
   ],
   imports: [
     CommonModule,

@@ -1,15 +1,32 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Clipboard } from '@angular/cdk/clipboard';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
-import { Clipboard } from '@angular/cdk/clipboard';
-import { ModalService, ResponseTypes, SnackbarService } from 'common-library';
+import { ModalService } from 'common-library';
 import { Subscription, timer } from 'rxjs';
+
+import { SoundService } from '../../services/sound.service';
+import { MascotMood } from './components/mascot/mascot.component';
 import { StateTableComponent } from './components/state-table/state-table.component';
-import { Mark, OnlineState, SocketAck } from './models/room-info.model';
+import { Mark, OnlineState, RoomState, SocketAck } from './models/room-info.model';
 import { WinnersData } from './models/winning-count.model';
 import { GameService } from './services/game.service';
 import { SocketService } from './services/socket.service';
+
+export type SheetTone = 'win' | 'lose' | 'draw';
+
+/** The round-end banner that slides up from the bottom (Duolingo-style feedback). */
+export interface Sheet {
+  tone: SheetTone;
+  title: string;
+  text: string;
+}
+
+interface Speech {
+  mood: MascotMood;
+  text: string;
+}
 
 @Component({
   selector: 'app-game',
@@ -18,19 +35,27 @@ import { SocketService } from './services/socket.service';
 })
 export class GameComponent implements OnInit, OnDestroy {
 
-  // vars
   player = 'single';
-  difficulty = 'hard';
+  difficulty = 'expert';
   winningCount!: WinnersData;
   online: OnlineState = { connection: 'idle', room: null, you: null, nextRoundAt: null };
   busy = false;
   /** Whole seconds until the next online round starts (null when no round has just finished). */
   secondsLeft: number | null = null;
+  /** Bumped to fire the confetti. */
+  confetti = 0;
+  /** Which invite button just copied, for inline "Copied" feedback. */
+  copied: 'code' | 'link' | null = null;
+  /** Most recent online move (for the "last move" dot). */
+  onlineLastMove: number | null = null;
+  /** Rounds in a row you have won in the current online room. */
+  onlineStreak = 0;
+  readonly canShare = typeof navigator !== 'undefined' && !!navigator.share;
 
   readonly modes = [
-    { value: 'single', label: 'Single Player', icon: 'smart_toy' },
-    { value: 'two', label: 'Two Player', icon: 'groups' },
-    { value: 'friend', label: 'Play with Friend', icon: 'public' },
+    { value: 'single', label: 'Computer', icon: 'smart_toy' },
+    { value: 'two', label: 'Pass & play', icon: 'groups' },
+    { value: 'friend', label: 'Online', icon: 'public' },
   ];
   readonly difficulties = [
     { value: 'easy', label: 'Easy' },
@@ -42,28 +67,43 @@ export class GameComponent implements OnInit, OnDestroy {
   userJoin = new FormControl('', [Validators.required]);
   roomId = new FormControl('', [Validators.required]);
 
+  @ViewChild('sheetButton') sheetButton?: ElementRef<HTMLButtonElement>;
+
   private sub = new Subscription();
+  private copiedTimer?: ReturnType<typeof setTimeout>;
+  private announcedLocal: unknown = null;
 
   constructor(
     public gameService: GameService,
     public dialog: MatDialog,
     private socketService: SocketService,
     private modalService: ModalService,
-    private snackbar: SnackbarService,
+    private sound: SoundService,
     private clipboard: Clipboard,
     private route: ActivatedRoute,
   ) { }
 
   ngOnInit(): void {
-    this.initGame();
-    this.sub.add(this.socketService.state$.subscribe((state) => this.online = state));
-    // Drives the "Next round in 3…" label; cheap, and only does work while a round is finished.
+    this.player = this.gameService.player;
+    this.difficulty = this.gameService.difficulty;
+    this.syncWinningCount();
+    this.gameService.onAiMove = () => {
+      this.sound.play('x');
+      this.announceLocalResult();
+    };
+
+    this.sub.add(this.socketService.state$.subscribe((state) => {
+      const prev = this.online;
+      this.online = state;
+      this.reactToOnline(prev, state);
+    }));
+    // Drives the "Next round in 3" label; only does work while a round is finished.
     this.sub.add(timer(0, 250).subscribe(() => {
       const at = this.online.nextRoundAt;
       this.secondsLeft = at ? Math.max(0, Math.ceil((at - Date.now()) / 1000)) : null;
     }));
 
-    // Invite links (?room=CODE) and refreshes during an online game open "Play with Friend".
+    // Invite links (?room=CODE) and refreshes during an online game open online mode.
     const invite = this.route.snapshot.queryParamMap.get('room');
     if (invite) {
       this.roomId.setValue(invite.toUpperCase());
@@ -75,101 +115,77 @@ export class GameComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.sub.unsubscribe();
+    this.gameService.onAiMove = undefined;
+    if (this.copiedTimer) clearTimeout(this.copiedTimer);
   }
 
-  initGame() {
-    this.player = this.gameService.player;
-    this.difficulty = this.gameService.difficulty;
-    this.winningCount = this.player === 'single' ? this.gameService.winningCount.one : this.gameService.winningCount.two;
-  }
-
-  viewStats() {
-    const counts = this.gameService.winningCount;
-    this.dialog.open(StateTableComponent, {
-      data: counts
-    });
-  }
+  //#region modes
 
   selectMode(mode: string) {
     if (mode === this.player) return;
     const previous = this.gameService.player;
     this.player = mode;
     this.gameService.setPlayer(mode);
-    if (mode === 'single') {
-      this.gameService.xIsNext = false;
-      this.winningCount = this.gameService.winningCount.one;
-    }
-    if (mode === 'two') {
-      this.gameService.xIsNext = true;
-      this.winningCount = this.gameService.winningCount.two;
-    }
+    this.gameService.xIsNext = mode !== 'single';
     if (mode === 'friend') {
       this.socketService.connect();
     } else if (previous === 'friend') {
       this.socketService.disconnect();
     }
+    this.syncWinningCount();
     this.gameService.resetGame();
+    this.announcedLocal = null;
   }
 
   setDifficulty(value: string) {
     this.difficulty = value;
     this.gameService.difficulty = value;
     this.gameService.resetGame();
+    this.announcedLocal = null;
   }
 
-  //#region labels
-
-  get subtitle(): string {
-    switch (this.player) {
-      case 'single': return 'Beat the computer. You play O.';
-      case 'two': return 'Pass and play on one screen.';
-      default: return 'Challenge a friend online. Rounds restart automatically.';
-    }
+  viewStats() {
+    this.dialog.open(StateTableComponent, { data: this.gameService.winningCount, autoFocus: false });
   }
 
-  get xLabel(): string {
-    if (this.player === 'single') return 'Computer';
-    if (this.player === 'two') return 'Player X';
-    return this.playerLabel('X');
+  private syncWinningCount() {
+    this.winningCount = this.player === 'two' ? this.gameService.winningCount.two : this.gameService.winningCount.one;
   }
 
-  get oLabel(): string {
-    if (this.player === 'single') return 'You';
-    if (this.player === 'two') return 'Player O';
-    return this.playerLabel('O');
-  }
-
-  get xScore(): number { return this.room && this.player === 'friend' ? this.room.scores.X : this.winningCount.xWins; }
-  get oScore(): number { return this.room && this.player === 'friend' ? this.room.scores.O : this.winningCount.oWins; }
-  get drawScore(): number { return this.room && this.player === 'friend' ? this.room.scores.draw : this.winningCount.draw; }
-
-  private playerLabel(mark: Mark): string {
-    const p = this.room?.players[mark];
-    if (!p) return 'Waiting for friend…';
-    return this.you === mark ? `${p.name} (you)` : p.name;
-  }
-
-  playerOnline(mark: Mark): boolean {
-    return this.room?.players[mark]?.connected ?? false;
-  }
-
-  //#endregion labels
+  //#endregion modes
 
   //#region local play
 
   onLocalCellClick(index: number) {
-    const winnerData = this.gameService.calculateWinner(this.gameService.squares);
-    if (winnerData || this.gameService.squares[index]) {
-      return;
-    }
-    this.gameService.updateSquare(index, winnerData);
+    const placed = this.gameService.updateSquare(index);
+    if (!placed) return;
+    this.sound.play(placed === 'X' ? 'x' : 'o');
+    this.announceLocalResult();
+  }
+
+  nextLocalRound() {
+    this.gameService.nextRound();
+    this.announcedLocal = null;
+    this.sound.play('tap');
+  }
+
+  /** Sound, confetti and focus for a finished local round (once per result). */
+  private announceLocalResult() {
+    const result = this.gameService.result;
+    if (!result || result === this.announcedLocal) return;
+    this.announcedLocal = result;
+    const youWon = this.player === 'single' ? result.winner === 'O' : result.winner !== 'draw';
+    const tone = result.winner === 'draw' ? 'draw' : youWon ? 'win' : 'lose';
+    this.celebrate(tone);
+    // move keyboard focus to the banner's button so Enter starts the next round
+    setTimeout(() => this.sheetButton?.nativeElement.focus(), 450);
   }
 
   //#endregion local play
 
   //#region online play
 
-  get room() { return this.online.room; }
+  get room(): RoomState | null { return this.online.room; }
   get you(): Mark | null { return this.online.you; }
   get opponent(): Mark | null { return this.you === 'X' ? 'O' : this.you === 'O' ? 'X' : null; }
   get isMyTurn(): boolean { return this.socketService.isMyTurn; }
@@ -178,24 +194,10 @@ export class GameComponent implements OnInit, OnDestroy {
   get bothJoined(): boolean { return !!this.room?.players.X && !!this.room?.players.O; }
   get finished(): boolean { return this.room?.status === 'finished'; }
   get boardLocked(): boolean { return !this.isMyTurn; }
-
-  get statusMessage(): string {
-    const room = this.room;
-    if (!room || !this.you) return '';
-    const opp = this.opponent ? room.players[this.opponent] : null;
-    if (room.status === 'waiting') return 'Waiting for your friend to join…';
-    if (room.status === 'finished') {
-      const next = this.secondsLeft === null ? '' : ` Next round in ${this.secondsLeft}s`;
-      if (room.winner === 'draw') return `It's a draw!${next}`;
-      const who = room.winner === this.you ? 'You won! 🎉' : `${room.players[room.winner as Mark]?.name ?? 'Opponent'} won.`;
-      return who + next;
-    }
-    if (opp && !opp.connected) return `${opp.name} lost connection, waiting for them to come back…`;
-    return this.isMyTurn ? 'Your turn' : `${opp?.name ?? 'Opponent'}'s turn`;
-  }
+  get opponentName(): string { return (this.opponent && this.room?.players[this.opponent]?.name) || 'Your friend'; }
 
   async createGame() {
-    if (!this.userCreate.valid || !this.userCreate.value?.trim()) {
+    if (!this.userCreate.value?.trim()) {
       this.userCreate.markAsTouched();
       return;
     }
@@ -212,30 +214,43 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   async onOnlineCellClick(index: number) {
-    if (!this.isMyTurn) {
-      this.snackbar.showSnackbar(this.room?.status === 'waiting' ? 'Waiting for player 2 to join the game' : 'It\'s not your turn', ResponseTypes.warning);
-      return;
-    }
+    if (!this.isMyTurn) return; // the board is locked and the mascot says why
+    this.sound.play(this.you === 'X' ? 'x' : 'o');
     const res = await this.socketService.playTurn(index);
-    if (!res.ok) this.snackbar.showSnackbar(res.error ?? 'Move rejected', ResponseTypes.warning);
+    if (!res.ok) this.modalService.openAlert(res.error ?? 'That move was not accepted. Try again.');
   }
 
   async leaveRoom() {
+    this.onlineStreak = 0;
     await this.socketService.leaveGame();
   }
 
   copyRoomCode() {
-    if (this.room && this.clipboard.copy(this.room.id)) {
-      this.snackbar.showSnackbar('Room code copied', ResponseTypes.success);
-    }
+    if (this.room && this.clipboard.copy(this.room.id)) this.flashCopied('code');
   }
 
   copyInviteLink() {
+    if (this.room && this.clipboard.copy(this.inviteUrl)) this.flashCopied('link');
+  }
+
+  async shareInvite() {
     if (!this.room) return;
-    const url = `${window.location.origin}${window.location.pathname}?room=${this.room.id}`;
-    if (this.clipboard.copy(url)) {
-      this.snackbar.showSnackbar('Invite link copied', ResponseTypes.success);
+    try {
+      await navigator.share({ title: 'Play Tic Tac Toe with me', text: `Join my game with code ${this.room.id}`, url: this.inviteUrl });
+    } catch {
+      // user closed the share sheet; nothing to do
     }
+  }
+
+  private get inviteUrl(): string {
+    return `${window.location.origin}${window.location.pathname}?room=${this.room?.id}`;
+  }
+
+  private flashCopied(what: 'code' | 'link') {
+    this.copied = what;
+    this.sound.play('tap');
+    if (this.copiedTimer) clearTimeout(this.copiedTimer);
+    this.copiedTimer = setTimeout(() => this.copied = null, 1800);
   }
 
   private async withBusy(fn: () => Promise<SocketAck>) {
@@ -243,12 +258,163 @@ export class GameComponent implements OnInit, OnDestroy {
     this.busy = true;
     try {
       const res = await fn();
-      if (!res.ok) this.modalService.openAlert(res.error ?? 'Something went wrong');
+      if (!res.ok) this.modalService.openAlert(res.error ?? 'Something went wrong. Try again.');
     } finally {
       this.busy = false;
     }
   }
 
+  /** Sounds, last-move dot, streak and confetti from server state changes. */
+  private reactToOnline(prev: OnlineState, next: OnlineState) {
+    const a = prev.room, b = next.room;
+    if (!b || !a || a.id !== b.id) {
+      this.onlineLastMove = null;
+      if (!b) this.onlineStreak = 0;
+      return;
+    }
+    if (!a.players.O && b.players.O || !a.players.X && b.players.X) this.sound.play('join');
+    if (a.round !== b.round) {
+      this.onlineLastMove = null;
+      return;
+    }
+    const placed = b.board.findIndex((v, i) => v && !a.board[i]);
+    if (placed >= 0) {
+      this.onlineLastMove = placed;
+      if (b.board[placed] !== next.you) this.sound.play(b.board[placed] === 'X' ? 'x' : 'o');
+    }
+    if (a.status !== 'finished' && b.status === 'finished') {
+      const tone: SheetTone = b.winner === 'draw' ? 'draw' : b.winner === next.you ? 'win' : 'lose';
+      this.onlineStreak = tone === 'win' ? this.onlineStreak + 1 : 0;
+      this.celebrate(tone);
+    }
+  }
+
   //#endregion online play
+
+  //#region presentation
+
+  private celebrate(tone: SheetTone) {
+    this.sound.play(tone);
+    if (tone === 'win') this.confetti++;
+  }
+
+  /** The round-end banner, for every mode. */
+  get sheet(): Sheet | null {
+    if (this.player === 'friend') {
+      const r = this.room;
+      if (!r || r.status !== 'finished' || !this.you) return null;
+      const next = this.secondsLeft ? `Next round in ${this.secondsLeft}` : 'Starting the next round…';
+      if (r.winner === 'draw') return { tone: 'draw', title: 'It\'s a draw', text: next };
+      if (r.winner === this.you) {
+        const streak = this.onlineStreak >= 2 ? `${this.onlineStreak} wins in a row. ` : '';
+        return { tone: 'win', title: 'You won!', text: streak + next };
+      }
+      return { tone: 'lose', title: `${this.opponentName} won`, text: next };
+    }
+
+    const res = this.gameService.result;
+    if (!res) return null;
+    if (this.player === 'two') {
+      if (res.winner === 'draw') return { tone: 'draw', title: 'It\'s a draw', text: 'Nobody slipped. The other player starts next.' };
+      return { tone: 'win', title: `Player ${res.winner} wins!`, text: `Score ${this.winningCount.xWins}–${this.winningCount.oWins}. The other player starts next.` };
+    }
+    if (res.winner === 'draw') return { tone: 'draw', title: 'It\'s a draw', text: 'Not bad. Tic couldn\'t get you.' };
+    if (res.winner === 'O') {
+      const s = this.gameService.streak;
+      return { tone: 'win', title: 'You won!', text: s >= 2 ? `${s} wins in a row. Keep it going.` : `You beat Tic on ${this.difficulty}.` };
+    }
+    return { tone: 'lose', title: 'Tic won this one', text: 'Watch the corners. You go first again.' };
+  }
+
+  get sheetAction(): string {
+    return this.sheet?.tone === 'lose' ? 'Try again' : 'Next round';
+  }
+
+  /** What the mascot says, and its face. */
+  get speech(): Speech {
+    if (this.player === 'single') {
+      const res = this.gameService.result;
+      if (res) return res.winner === 'O' ? { mood: 'sad', text: 'You got me. One more?' }
+        : res.winner === 'X' ? { mood: 'happy', text: 'Got you this time!' } : { mood: 'idle', text: 'Nobody wins. Again?' };
+      if (this.gameService.aiThinking) return { mood: 'think', text: 'Hmm, let me think…' };
+      return this.gameService.squares.some(Boolean)
+        ? { mood: 'idle', text: 'Your move.' }
+        : { mood: 'idle', text: 'I\'m Tic. You\'re O and you go first. Pick a square.' };
+    }
+    if (this.player === 'two') {
+      const res = this.gameService.result;
+      if (res) return res.winner === 'draw' ? { mood: 'idle', text: 'A draw. Swap and go again.' } : { mood: 'happy', text: `Player ${res.winner} takes it!` };
+      return { mood: 'idle', text: `Player ${this.gameService.xIsNext ? 'X' : 'O'}, your move.` };
+    }
+
+    // online
+    if (this.online.connection === 'reconnecting' || this.online.connection === 'offline') {
+      return { mood: 'wait', text: 'Lost the connection. Reconnecting, your game is safe.' };
+    }
+    const r = this.room;
+    if (!r) return { mood: 'idle', text: 'Start a game and send your friend the code, or join theirs.' };
+    if (!this.bothJoined) return { mood: 'wait', text: 'Send your friend the room code. The game starts when they join.' };
+    if (r.status === 'finished') {
+      if (r.winner === 'draw') return { mood: 'idle', text: 'A draw! Next round is on its way.' };
+      return r.winner === this.you ? { mood: 'happy', text: 'You won this round!' } : { mood: 'sad', text: `${this.opponentName} got this one.` };
+    }
+    const opp = this.opponent ? r.players[this.opponent] : null;
+    if (opp && !opp.connected) return { mood: 'wait', text: `${opp.name} dropped out. They can rejoin, hang on.` };
+    return this.isMyTurn ? { mood: 'idle', text: 'Your turn.' } : { mood: 'think', text: `${this.opponentName} is thinking…` };
+  }
+
+  /** Data for the two sides of the match strip. */
+  side(mark: Mark): { name: string; note: string; score: number; initial: string; turn: boolean; offline: boolean; you: boolean } {
+    if (this.player === 'friend') {
+      const p = this.room?.players[mark];
+      const r = this.room;
+      return {
+        name: p?.name ?? 'Waiting…',
+        note: !p ? 'Not joined yet' : this.you === mark ? 'You' : p.connected ? 'Friend' : 'Offline',
+        score: r?.scores[mark] ?? 0,
+        initial: p ? p.name.charAt(0).toUpperCase() : '?',
+        turn: r?.status === 'playing' && r.turn === mark,
+        offline: !!p && !p.connected,
+        you: this.you === mark,
+      };
+    }
+    const single = this.player === 'single';
+    const result = this.gameService.result;
+    const nextMark = single ? (this.gameService.aiThinking ? 'X' : 'O') : this.gameService.xIsNext ? 'X' : 'O';
+    return {
+      name: single ? (mark === 'X' ? 'Tic' : 'You') : `Player ${mark}`,
+      note: single
+        ? (mark === 'X' ? `Computer, ${this.difficultyLabel.toLowerCase()}` : this.gameService.streak >= 2 ? `${this.gameService.streak} wins in a row` : 'Plays O')
+        : (this.xStartsTwoPlayer === (mark === 'X') ? 'Starts this round' : 'Plays ' + mark),
+      score: mark === 'X' ? this.winningCount.xWins : this.winningCount.oWins,
+      initial: mark,
+      turn: !result && nextMark === mark,
+      offline: false,
+      you: single && mark === 'O',
+    };
+  }
+
+  get draws(): number {
+    return this.player === 'friend' ? this.room?.scores.draw ?? 0 : this.winningCount.draw;
+  }
+
+  get ghost(): string | null {
+    if (this.player === 'friend') return this.isMyTurn ? this.you : null;
+    if (this.gameService.locked) return null;
+    return this.player === 'single' ? 'O' : this.gameService.xIsNext ? 'X' : 'O';
+  }
+
+  /** Who opened the current pass-and-play round (X when the board is empty and X is next...). */
+  private get xStartsTwoPlayer(): boolean {
+    const filled = this.gameService.squares.filter(Boolean).length;
+    // an even number of marks means the player to move is the one who started
+    return filled % 2 === 0 ? this.gameService.xIsNext : !this.gameService.xIsNext;
+  }
+
+  private get difficultyLabel(): string {
+    return this.difficulties.find((d) => d.value === this.difficulty)?.label ?? '';
+  }
+
+  //#endregion presentation
 
 }

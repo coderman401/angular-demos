@@ -2,17 +2,15 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background:
-    radial-gradient(900px 420px at 50% -120px, var(--p-soft), transparent 70%),
-    var(--bg);
+  background: var(--bg);
 }
 
 .skip-link {
   position: absolute;
   left: 12px;
   top: 8px;
-  z-index: 10;
-  padding: 8px 14px;
+  z-index: 50;
+  padding: 10px 16px;
   border-radius: var(--r-sm);
   background: var(--heading);
   color: var(--bg);
@@ -24,32 +22,22 @@
 }
 
 .nav {
-  border-bottom: var(--edge) solid var(--line);
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
-  z-index: 5;
+  z-index: 20;
+  border-bottom: var(--edge) solid var(--line);
+  background: var(--bg);
 
   &__in {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 64px;
+    min-height: 68px;
   }
   &__links {
     display: flex;
     align-items: center;
-    gap: 6px;
-  }
-  &__link {
-    padding: 8px 14px;
-    border-radius: var(--r-sm);
-    color: var(--heading);
-    font-weight: 800;
-    &:hover {
-      background: var(--fill);
-    }
+    gap: 8px;
   }
 }
 
@@ -57,40 +45,43 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: var(--heading);
 
   &__logo {
     width: 38px;
     height: 38px;
-    .lip {
-      fill: var(--p-lip);
-    }
-    .face {
-      fill: var(--p);
-    }
-    .grid {
+    .lip { fill: var(--p-lip); }
+    .face { fill: var(--p); }
+    .eye { fill: var(--on-p); }
+    .cheek { fill: var(--s); }
+    .smile {
+      fill: none;
       stroke: var(--on-p);
-      stroke-width: 2.4;
+      stroke-width: 2.2;
       stroke-linecap: round;
-      opacity: 0.55;
-    }
-    .x {
-      stroke: var(--on-p);
-      stroke-width: 2.6;
-      stroke-linecap: round;
-    }
-    .o {
-      fill: var(--s);
-      stroke: var(--on-s);
-      stroke-width: 1.6;
     }
   }
   &__name {
-    font-size: 24px;
-    font-weight: 600;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--p-text);
   }
-  &:hover &__logo {
-    animation: wiggle 0.5s var(--ease-pop);
+}
+
+// reference: "nav language pill" - uppercase, tracked, 2px Faded Gray border
+.pill-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: var(--edge) solid var(--line-strong);
+  border-radius: var(--r-sm);
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.053em;
+  text-transform: uppercase;
+  &:hover {
+    color: var(--heading);
   }
 }
 
@@ -99,19 +90,19 @@
   place-items: center;
   width: 44px;
   height: 44px;
-  border: var(--edge) solid var(--line);
+  border: var(--edge) solid var(--line-strong);
   border-bottom-width: var(--lip);
   border-radius: var(--r-sm);
   background: var(--card);
-  color: var(--heading);
+  color: var(--muted);
   cursor: pointer;
-  transition: transform 0.16s var(--ease-out);
+  transition: transform 0.12s var(--ease-out);
   &:hover {
-    transform: translateY(-2px);
+    color: var(--heading);
   }
   &:active {
     transform: translateY(3px);
-    border-bottom-width: 1px;
+    border-bottom-width: var(--edge);
   }
 }
 
@@ -119,38 +110,59 @@
   flex: 1;
 }
 
+// reference: full-bleed brand band at the bottom
 .foot {
-  padding: 28px 0 36px;
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 700;
+  margin-top: 48px;
+  padding: 48px 0;
+  background: var(--p);
+  color: var(--on-p);
 
   &__in {
+    display: grid;
+    gap: 8px;
+    justify-items: center;
+    text-align: center;
+  }
+  &__lead {
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  &__text {
+    max-width: 44ch;
+    font-weight: 600;
+    opacity: 0.85;
+  }
+  &__links {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
+    gap: 8px 24px;
     justify-content: center;
-  }
-  a {
-    color: var(--p-text);
-    &:hover {
+    margin-top: 8px;
+    a {
+      color: var(--on-p);
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: 0.053em;
+      text-transform: uppercase;
       text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 4px;
     }
   }
-  &__dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--line-strong);
+  &__credit {
+    margin-top: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    opacity: 0.75;
   }
 }
 
-@keyframes wiggle {
-  30% {
-    transform: rotate(-8deg) scale(1.06);
+@media (max-width: 560px) {
+  .pill-link {
+    display: none;
   }
-  60% {
-    transform: rotate(6deg) scale(1.06);
+  .brand__name {
+    font-size: 24px;
   }
 }

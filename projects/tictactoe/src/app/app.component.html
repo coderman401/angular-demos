@@ -1,22 +1,29 @@
-<a class="skip-link" href="#main">Skip to content</a>
+<a class="skip-link" href="#main">Skip to the game</a>
 
 <header class="nav">
   <div class="wrap nav__in">
     <a class="brand" routerLink="/" aria-label="TicTacToe, home">
       <svg class="brand__logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
-        <rect y="3" width="40" height="37" rx="12" class="lip" />
-        <rect width="40" height="37" rx="12" class="face" />
-        <path d="M15 8v21M25 8v21M8 15h24M8 23h24" class="grid" />
-        <path d="M9.6 9.6l4 4M13.6 9.6l-4 4" class="x" />
-        <circle cx="30" cy="27" r="2.6" class="o" />
+        <rect y="4" width="40" height="36" rx="11" class="lip" />
+        <rect width="40" height="36" rx="11" class="face" />
+        <circle cx="14" cy="15" r="3.2" class="eye" />
+        <circle cx="26" cy="15" r="3.2" class="eye" />
+        <circle cx="9" cy="22" r="2.4" class="cheek" />
+        <circle cx="31" cy="22" r="2.4" class="cheek" />
+        <path d="M16.5 22.5q3.5 3.5 7 0" class="smile" />
       </svg>
-      <span class="brand__name display">TicTacToe</span>
+      <span class="brand__name display">tictactoe</span>
     </a>
 
     <nav class="nav__links" aria-label="Site">
-      <a class="nav__link" href="https://coderman401.web.app/demos" target="_blank" rel="noopener">More demos</a>
+      <a class="pill-link" href="https://coderman401.web.app/demos" target="_blank" rel="noopener">More demos</a>
+      <button type="button" class="icon-btn" (click)="sound.toggle()" [attr.aria-pressed]="sound.enabled"
+        [attr.aria-label]="sound.enabled ? 'Mute sounds' : 'Turn sounds on'" [title]="sound.enabled ? 'Mute sounds' : 'Turn sounds on'">
+        <mat-icon>{{ sound.enabled ? 'volume_up' : 'volume_off' }}</mat-icon>
+      </button>
       <button type="button" class="icon-btn" (click)="toggleTheme()"
-        [attr.aria-label]="themeService.isDark ? 'Switch to light theme' : 'Switch to dark theme'">
+        [attr.aria-label]="themeService.isDark ? 'Switch to light theme' : 'Switch to dark theme'"
+        [title]="themeService.isDark ? 'Light theme' : 'Dark theme'">
         <mat-icon>{{ themeService.isDark ? 'light_mode' : 'dark_mode' }}</mat-icon>
       </button>
     </nav>
@@ -29,8 +36,12 @@
 
 <footer class="foot">
   <div class="wrap foot__in">
-    <span>Made by <a href="https://coderman401.web.app/demos" target="_blank" rel="noopener">Coderman401</a></span>
-    <span class="foot__dot" aria-hidden="true"></span>
-    <span>Realtime play powered by Socket.IO</span>
+    <p class="foot__lead display">Fancy another game?</p>
+    <p class="foot__text">Play the computer, pass the phone around, or send a friend a room code.</p>
+    <nav class="foot__links" aria-label="Footer">
+      <a href="https://coderman401.web.app/demos" target="_blank" rel="noopener">More demos</a>
+      <a href="https://github.com/coderman401/angular-demos" target="_blank" rel="noopener">Source code</a>
+    </nav>
+    <p class="foot__credit">Made by Coderman401</p>
   </div>
 </footer>
