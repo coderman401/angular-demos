@@ -63,6 +63,59 @@
     }
   }
 
+  .connection {
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.4rem;
+    font-size: 1.4rem;
+    background: #fff3cd;
+    color: #664d03;
+  }
+
+  .room-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem;
+    .code {
+      font-size: 1.8rem;
+      b {
+        letter-spacing: 0.2rem;
+      }
+    }
+  }
+
+  .players {
+    display: flex;
+    gap: 2.4rem;
+    justify-content: center;
+    font-size: 1.8rem;
+    .player {
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.4rem;
+      border: 2px solid transparent;
+      &.active {
+        border-color: #6b948c;
+      }
+      img {
+        vertical-align: middle;
+        margin-right: 0.4rem;
+      }
+      .offline {
+        color: #c62828;
+      }
+    }
+  }
+
+  .rematch {
+    text-align: center;
+    p {
+      margin-top: 0.8rem;
+      font-size: 1.4rem;
+    }
+  }
+
   .game-stats {
     display: flex;
     align-items: center;

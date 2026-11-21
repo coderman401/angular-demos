@@ -1,33 +1,29 @@
-import { Component } from '@angular/core';
-import { GameService } from '../../services/game.service';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
+/** Presentational 3x3 board. The parent decides what a click means (local or online). */
 @Component({
   selector: 'board',
   templateUrl: './board.component.html',
   styleUrls: ['./board.component.scss']
 })
-
 export class BoardComponent {
 
-  // vars
-  board = [
+  readonly board = [
     [0, 1, 2],
     [3, 4, 5],
     [6, 7, 8]
   ];
-  squares = Array(9).fill('');
-  winnerData: any;
 
-  constructor(public gameService: GameService) { }
+  @Input() squares: string[] = Array(9).fill('');
+  @Input() winLine: number[] = [];
+  @Input() disabled = false;
+  @Output() cellClick = new EventEmitter<number>();
 
   clickSquare(index: number) {
-    this.squares = this.gameService.squares;
-    this.winnerData = this.gameService.calculateWinner(this.squares);
-    if (this.winnerData || this.squares[index]) {
+    if (this.disabled || this.squares[index]) {
       return;
     }
-
-    this.gameService.updateSquare(index, this.winnerData);
+    this.cellClick.emit(index);
   }
 
 }

@@ -1,8 +1,10 @@
 <ng-container *ngFor="let row of board">
   <div class="board-row">
     <ng-container *ngFor="let column of row">
-      <button class="square {{gameService.squares[column] }}" (click)="clickSquare(column)">
-        {{gameService.squares[column] }}
+      <button class="square {{ squares[column] }}" [class.win]="winLine.includes(column)"
+        [class.locked]="disabled && !squares[column]" [attr.aria-label]="'Cell ' + (column + 1) + ' ' + (squares[column] || 'empty')"
+        (click)="clickSquare(column)">
+        {{ squares[column] }}
       </button>
     </ng-container>
   </div>
