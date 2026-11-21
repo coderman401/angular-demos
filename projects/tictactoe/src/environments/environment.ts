@@ -4,7 +4,9 @@
 
 export const environment = {
   production: false,
-  socketURL: 'https://coderman-socket.herokuapp.com'
+  // Run the xo-socket repo locally with `npm run dev` (port 1224).
+  socketURL: 'http://localhost:1224',
+  socketPath: '/api/socket-io/socket.io',
 };
 
 /*

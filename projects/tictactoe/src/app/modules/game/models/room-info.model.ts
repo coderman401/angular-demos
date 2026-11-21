@@ -1,16 +1,37 @@
-export interface RoomInfo {
-  message?: string;
-  player_name?: string;
-  player_turn: boolean;
-  is_player_joined?: boolean;
-  roomId?: string;
-  player_type: 'X' | 'O' | string;
-  turn?: string;
-  roomObj?: RoomObj
+export type Mark = 'X' | 'O';
+
+export interface RoomPlayer {
+  name: string;
+  connected: boolean;
 }
 
-export interface RoomObj {
-  player1: string;
-  player2: string;
-  roomId: string;
+/** Authoritative room state as broadcast by the xo-socket server. */
+export interface RoomState {
+  id: string;
+  players: Record<Mark, RoomPlayer | null>;
+  board: ('' | Mark)[];
+  turn: Mark;
+  status: 'waiting' | 'playing' | 'finished';
+  winner: Mark | 'draw' | null;
+  line: number[];
+  scores: { X: number; O: number; draw: number };
+  round: number;
+  rematch: Record<Mark, boolean>;
+}
+
+export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'offline';
+
+export interface OnlineState {
+  connection: ConnectionStatus;
+  room: RoomState | null;
+  you: Mark | null;
+}
+
+export interface SocketAck {
+  ok: boolean;
+  code?: string;
+  error?: string;
+  room?: RoomState;
+  you?: Mark;
+  playerId?: string;
 }
