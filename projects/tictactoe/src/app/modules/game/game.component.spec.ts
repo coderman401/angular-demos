@@ -132,9 +132,9 @@ describe('GameComponent', () => {
       component.secondsLeft = 3;
       fixture.detectChanges();
       expect(el().textContent).toContain('Alice won');
-      expect(el().querySelector('.sheet')?.textContent).toContain('Next round in 3');
+      expect(el().querySelector('.toast')?.textContent).toContain('Next round in 3');
       expect(el().querySelectorAll('board .tile.win').length).toBe(3);
-      expect(el().querySelector('.sheet--lose .sheet__timer')).not.toBeNull();
+      expect(el().querySelector('.toast--lose .toast__bar')).not.toBeNull();
       expect(Array.from(el().querySelectorAll('button')).some((b) => /again|rematch/i.test(b.textContent ?? ''))).toBeFalse();
       const scores = Array.from(el().querySelectorAll('.match__score')).map((s) => s.textContent?.trim());
       expect(scores).toEqual(['2', '1']);

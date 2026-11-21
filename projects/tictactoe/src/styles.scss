@@ -280,14 +280,20 @@ body {
   border-bottom-width: var(--lip);
   border-radius: var(--r-lg) !important;
   box-shadow: none !important;
-  padding: 24px !important;
+  padding: 20px !important;
 
   .mat-dialog-title,
   h1 {
+    margin: 0 0 12px !important;
     font-family: var(--font-ui) !important;
     color: var(--heading);
     font-weight: 800 !important;
-    font-size: 26px !important;
+    font-size: 21px !important;
+    line-height: 1.25 !important;
+  }
+  .mat-dialog-content {
+    margin: 0;
+    padding: 0;
   }
   .mat-dialog-actions {
     padding: 8px 0 0;
@@ -295,8 +301,9 @@ body {
   }
   .mat-raised-button,
   .mat-button-base.mat-raised-button {
-    min-height: 46px;
-    padding: 0 28px;
+    min-height: 40px;
+    padding: 0 24px;
+    font-size: 13px;
     border-radius: var(--r-sm);
     border-bottom: var(--lip) solid var(--p-lip);
     background: var(--p);

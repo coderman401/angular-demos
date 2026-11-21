@@ -336,88 +336,93 @@ board.pop {
   }
 }
 
-/* ---------- round-end banner (Duolingo-style feedback) ---------- */
-.sheet {
+/* ---------- round result toast: small, bottom centre ---------- */
+.toast {
   --tone: var(--p-wash);
+  --tone-edge: var(--p);
   --tone-ink: var(--p-text);
   --tone-badge: var(--p);
   --tone-badge-ink: var(--on-p);
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: max(16px, env(safe-area-inset-bottom, 0px));
   z-index: 30;
-  border-top: var(--edge) solid var(--line);
+  box-sizing: border-box;
+  width: min(420px, calc(100vw - 32px));
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 12px;
+  padding: 10px 16px 12px;
+  border: var(--edge) solid var(--tone-edge);
+  border-bottom-width: var(--lip);
+  border-radius: 16px;
   background: var(--tone);
-  animation: slide-up 0.35s var(--ease-out) 0.35s both;
+  animation: toast-in 0.35s var(--ease-pop) 0.3s both;
 
   &--win {
     --tone: var(--s-wash);
+    --tone-edge: var(--s-lip);
     --tone-ink: light-dark(#4d6600, var(--s));
     --tone-badge: var(--s);
     --tone-badge-ink: var(--on-s);
   }
   &--lose {
     --tone: var(--danger-wash);
+    --tone-edge: var(--danger);
     --tone-ink: var(--danger-text);
     --tone-badge: var(--danger);
     --tone-badge-ink: #fff;
   }
 
-  &__in {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    max-width: 760px;
-    padding-block: 20px 24px;
-  }
   &__badge {
-    flex: none;
+    grid-row: 1 / span 2;
     display: grid;
     place-items: center;
-    width: 56px;
-    height: 56px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: var(--tone-badge);
     color: var(--tone-badge-ink);
     .mat-icon {
-      font-size: 32px;
-      width: 32px;
-      height: 32px;
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
     }
   }
   &__copy {
-    flex: 1;
+    grid-row: 1 / span 2;
     min-width: 0;
   }
   &__title {
     margin: 0;
     color: var(--tone-ink);
-    font-size: 24px;
+    font-size: 17px;
     font-weight: 900;
     line-height: 1.2;
   }
   &__text {
-    margin: 2px 0 0;
-    color: var(--tone-ink);
-    font-weight: 700;
-    opacity: 0.85;
-  }
-  &__timer {
-    flex: none;
-    display: grid;
-    gap: 6px;
-    width: 150px;
-  }
-  &__count {
+    margin: 1px 0 0;
     color: var(--tone-ink);
     font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+    opacity: 0.85;
+  }
+  &__count {
+    grid-row: 1 / span 2;
+    align-self: center;
+    color: var(--tone-ink);
+    font-size: 13px;
     font-weight: 800;
-    text-align: right;
+    white-space: nowrap;
   }
   &__bar {
-    display: block;
-    height: 12px;
+    grid-column: 1 / -1;
+    height: 5px;
+    margin-top: 8px;
     border-radius: 999px;
     background: color-mix(in srgb, var(--tone-badge) 25%, transparent);
     overflow: hidden;
@@ -431,8 +436,15 @@ board.pop {
     }
   }
 }
-.sheet-spacer {
-  height: 120px;
+.toast-spacer {
+  height: 88px;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
 }
 
 /* ---------- connection banner ---------- */
@@ -486,22 +498,8 @@ board.pop {
   .lobby {
     grid-template-columns: minmax(0, 1fr);
   }
-  .sheet__in {
-    flex-wrap: wrap;
-    padding-block: 16px 20px;
-  }
-  .sheet__badge {
-    width: 44px;
-    height: 44px;
-  }
-  .sheet__timer {
-    width: 100%;
-  }
-  .sheet__count {
-    text-align: left;
-  }
-  .sheet-spacer {
-    height: 170px;
+  .toast-spacer {
+    height: 96px;
   }
   .match {
     gap: 8px;

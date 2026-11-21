@@ -150,7 +150,7 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   viewStats() {
-    this.dialog.open(StateTableComponent, { data: this.gameService.winningCount, autoFocus: false });
+    this.dialog.open(StateTableComponent, { data: this.gameService.winningCount, autoFocus: false, width: '380px', maxWidth: '92vw' });
   }
 
   private syncWinningCount() {
@@ -229,7 +229,7 @@ export class GameComponent implements OnInit, OnDestroy {
     const playing = this.bothJoined;
     return new Promise((resolve) => {
       this.dialog.open(ConfirmComponent, {
-        width: '420px',
+        width: '360px',
         maxWidth: '92vw',
         autoFocus: false,
         data: playing
@@ -336,15 +336,15 @@ export class GameComponent implements OnInit, OnDestroy {
     const res = this.gameService.result;
     if (!res) return null;
     if (this.player === 'two') {
-      if (res.winner === 'draw') return { tone: 'draw', title: 'It\'s a draw', text: 'The other player starts the next round.' };
-      return { tone: 'win', title: `Player ${res.winner} wins!`, text: `X ${this.winningCount.xWins}, O ${this.winningCount.oWins}. The other player starts the next round.` };
+      if (res.winner === 'draw') return { tone: 'draw', title: 'It\'s a draw', text: 'The other player starts next.' };
+      return { tone: 'win', title: `Player ${res.winner} wins!`, text: 'The other player starts next.' };
     }
     if (res.winner === 'draw') return { tone: 'draw', title: 'It\'s a draw', text: 'Not bad. Tic couldn\'t get you.' };
     if (res.winner === 'O') {
       const s = this.gameService.streak;
       return { tone: 'win', title: 'You won!', text: s >= 2 ? `${s} wins in a row. Keep it going.` : `You beat Tic on ${this.difficulty}.` };
     }
-    return { tone: 'lose', title: 'Tic won this one', text: 'Watch the corners. You go first again.' };
+    return { tone: 'lose', title: 'Tic won this one', text: 'Watch the corners. You go first.' };
   }
 
   /** Length of the pause before the next round, for the banner's progress bar. */

@@ -6,7 +6,7 @@
 
   th,
   td {
-    padding: 10px 8px;
+    padding: 8px 6px;
     text-align: center;
     vertical-align: middle;
     color: var(--heading);
@@ -40,11 +40,11 @@
     padding-left: 16px;
     border-radius: 12px 0 0 12px;
     text-align: left;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 800;
   }
   tbody td {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 900;
     font-variant-numeric: tabular-nums;
   }
@@ -54,9 +54,9 @@
 }
 
 .note {
-  margin: 12px 0 0;
+  margin: 8px 0 0;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .sr {

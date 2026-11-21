@@ -142,25 +142,21 @@
     <p class="hint" *ngIf="player !== 'friend' || bothJoined">Tip: press 1–9 to play a square, 1 is top left.</p>
   </aside>
   </div>
-  <div class="sheet-spacer" *ngIf="sheet" aria-hidden="true"></div>
+  <div class="toast-spacer" *ngIf="sheet" aria-hidden="true"></div>
 </div>
 
-<!-- Round-end banner -->
-<div class="sheet" *ngIf="sheet as sh" [ngClass]="'sheet--' + sh.tone" role="alertdialog" aria-live="assertive"
+<!-- Round result: a small toast, not a full-width sheet -->
+<div class="toast" *ngIf="sheet as sh" [ngClass]="'toast--' + sh.tone" role="alertdialog" aria-live="assertive"
   [attr.aria-label]="sh.title">
-  <div class="wrap sheet__in">
-    <span class="sheet__badge" aria-hidden="true">
-      <mat-icon>{{ sh.tone === 'win' ? 'emoji_events' : sh.tone === 'lose' ? 'close' : 'drag_handle' }}</mat-icon>
-    </span>
-    <div class="sheet__copy">
-      <p class="sheet__title">{{ sh.title }}</p>
-      <p class="sheet__text" *ngIf="sh.text">{{ sh.text }}</p>
-    </div>
-    <div class="sheet__timer" *ngIf="roundPauseMs > 0">
-      <span class="sheet__count" *ngIf="secondsLeft !== null">Next round in {{ secondsLeft }}</span>
-      <span class="sheet__bar" aria-hidden="true"><i [style.animation-duration.ms]="roundPauseMs"></i></span>
-    </div>
+  <span class="toast__badge" aria-hidden="true">
+    <mat-icon>{{ sh.tone === 'win' ? 'emoji_events' : sh.tone === 'lose' ? 'close' : 'drag_handle' }}</mat-icon>
+  </span>
+  <div class="toast__copy">
+    <p class="toast__title">{{ sh.title }}</p>
+    <p class="toast__text" *ngIf="sh.text">{{ sh.text }}</p>
   </div>
+  <span class="toast__count" *ngIf="secondsLeft !== null">Next round in {{ secondsLeft }}</span>
+  <span class="toast__bar" *ngIf="roundPauseMs > 0" aria-hidden="true"><i [style.animation-duration.ms]="roundPauseMs"></i></span>
 </div>
 
 <ttt-confetti [fire]="confetti"></ttt-confetti>
