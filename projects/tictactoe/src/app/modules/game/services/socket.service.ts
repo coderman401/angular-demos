@@ -11,7 +11,7 @@ const ACK_TIMEOUT = 8000;
 
 /**
  * Online play over Socket.IO. The server owns the game state; this service only
- * sends intents (create/join/move/rematch/leave) and mirrors the `roomState`
+ * sends intents (create/join/move/next-round/leave) and mirrors the `roomState`
  * broadcasts. It also restores the seat after a reconnect, which happens
  * routinely on Vercel (connections are closed at the function's max duration).
  */
@@ -19,7 +19,8 @@ const ACK_TIMEOUT = 8000;
 export class SocketService implements OnDestroy {
 
   private socket?: Socket;
-  private readonly stateSubject = new BehaviorSubject<OnlineState>({ connection: 'idle', room: null, you: null });
+  private nextRoundTimer?: ReturnType<typeof setTimeout>;
+  private readonly stateSubject = new BehaviorSubject<OnlineState>({ connection: 'idle', room: null, you: null, nextRoundAt: null });
   readonly state$ = this.stateSubject.asObservable();
 
   constructor(private zone: NgZone, private snackbar: SnackbarService) { }
@@ -52,9 +53,10 @@ export class SocketService implements OnDestroy {
 
     socket.on('connect', () => this.run(() => {
       this.patch({ connection: 'connected' });
-      this.restoreSession();
+      this.restoreSession(); // also re-arms the next-round timer from the fresh roomState
     }));
     socket.on('disconnect', (reason) => this.run(() => {
+      this.cancelNextRound();
       // 'io client disconnect' = we closed it on purpose.
       this.patch({ connection: reason === 'io client disconnect' ? 'idle' : 'reconnecting' });
     }));
@@ -93,18 +95,16 @@ export class SocketService implements OnDestroy {
     return this.request('playTurn', { tile });
   }
 
-  rematch(): Promise<SocketAck> {
-    return this.request('rematch');
-  }
-
   async leaveGame(): Promise<SocketAck> {
     this.clearSession();
-    this.patch({ room: null, you: null });
+    this.cancelNextRound();
+    this.patch({ room: null, you: null, nextRoundAt: null });
     if (!this.socket?.connected) return { ok: true };
     return this.request('leaveGame');
   }
 
   ngOnDestroy() {
+    this.cancelNextRound();
     this.socket?.disconnect();
   }
 
@@ -137,14 +137,50 @@ export class SocketService implements OnDestroy {
       } else if (res.code !== 'OFFLINE' && res.code !== 'TIMEOUT') {
         // Room expired or we were removed from it.
         this.clearSession();
-        this.patch({ room: null, you: null });
+        this.patch({ room: null, you: null, nextRoundAt: null });
         this.snackbar.showSnackbar(res.error || 'Your previous game is no longer available.', ResponseTypes.warning);
       }
     });
   }
 
   private applyRoom(room: RoomState, you: Mark | null) {
-    this.patch({ room, you });
+    const prev = this.state.room;
+    const roundChanged = !prev || prev.round !== room.round || prev.status !== room.status;
+    let nextRoundAt = this.state.nextRoundAt;
+    if (room.status !== 'finished' || room.nextRoundInMs === null) {
+      nextRoundAt = null;
+      this.cancelNextRound();
+    } else if (roundChanged || nextRoundAt === null || !this.nextRoundTimer) {
+      // The server sends a relative delay, so local clock differences don't matter.
+      nextRoundAt = Date.now() + room.nextRoundInMs;
+      this.scheduleNextRound(room.round, room.nextRoundInMs);
+    }
+    this.patch({ room, you, nextRoundAt });
+  }
+
+  /**
+   * Rounds restart automatically. When the countdown ends, every connected
+   * client asks the server for the next round. The call is idempotent, so it
+   * doesn't matter which of the two players' request arrives first.
+   */
+  private scheduleNextRound(round: number, delayMs: number) {
+    this.cancelNextRound();
+    this.nextRoundTimer = setTimeout(async () => {
+      this.nextRoundTimer = undefined;
+      const res = await this.request('nextRound', { round });
+      if (!res.ok && (res.code === 'TOO_EARLY' || res.code === 'TIMEOUT' || res.code === 'OFFLINE')) {
+        // Server clock a bit behind ours, or we're offline right now: try again shortly.
+        const room = this.state.room;
+        if (room && room.status === 'finished' && room.round === round) {
+          this.scheduleNextRound(round, Math.max(300, res.retryInMs ?? 1000));
+        }
+      }
+    }, delayMs + Math.floor(Math.random() * 150)); // jitter: the two clients rarely collide
+  }
+
+  private cancelNextRound() {
+    if (this.nextRoundTimer) clearTimeout(this.nextRoundTimer);
+    this.nextRoundTimer = undefined;
   }
 
   private patch(partial: Partial<OnlineState>) {

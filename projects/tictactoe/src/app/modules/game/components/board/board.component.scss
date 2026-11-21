@@ -1,48 +1,81 @@
-.board-row {
-  display: flex;
-  .square {
-    background: #fff;
-    border: 3px solid #cfc8b8;
-    font-weight: bold;
-    text-align: center;
-    transition: transform 0.5s;
-    font-size: 6.4rem;
-    height: 100px;
-    width: 100px;
-    color: #cfc8b8;
-    padding: 0;
-    &:hover {
-      transition: background-color 0.5s ease;
-      background-color: #e6e2da;
-      cursor: pointer;
-    }
-    &:focus {
-      outline: none;
-    }
-    &.X {
-      background-color: #524a4c;
-    }
-    &.O {
-      background-color: #6b948c;
-    }
-  }
+:host {
+  display: block;
+  width: min(100%, 440px);
+  margin-inline: auto;
 }
 
-.board-row .square {
-  &.locked:hover {
-    cursor: not-allowed;
-    background-color: #fff;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(8px, 2.4vw, 14px);
+}
+
+.tile {
+  --t-bg: var(--fill);
+  --t-lip: var(--line-strong);
+  --t-fg: var(--heading);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-bottom: 6px solid var(--t-lip);
+  border-radius: var(--r-md);
+  background: var(--t-bg);
+  color: var(--t-fg);
+  font-size: clamp(44px, 14vw, 76px);
+  cursor: pointer;
+  transition: transform 0.18s var(--ease-out), opacity 0.3s var(--ease-out), filter 0.18s var(--ease-out);
+
+  &:hover:not(.x):not(.o) {
+    transform: translateY(-3px);
+    filter: brightness(1.03);
   }
-  // Filled cells keep their colour on hover.
-  &.X:hover {
-    background-color: #524a4c;
+  &:active:not(.x):not(.o) {
+    transform: translateY(4px);
+    border-bottom-width: 2px;
+    transition-duration: 0.05s;
+  }
+  &.x {
+    --t-bg: var(--p);
+    --t-lip: var(--p-lip);
+    --t-fg: var(--on-p);
     cursor: default;
   }
-  &.O:hover {
-    background-color: #6b948c;
+  &.o {
+    --t-bg: var(--s);
+    --t-lip: var(--s-lip);
+    --t-fg: var(--on-s);
     cursor: default;
   }
   &.win {
-    box-shadow: inset 0 0 0 4px #ffd54f;
+    animation: win 0.7s var(--ease-pop) both;
+    box-shadow: 0 0 0 4px var(--bg), 0 0 0 7px var(--heading);
+  }
+  &.dim {
+    opacity: 0.45;
+  }
+}
+
+.locked .tile:not(.x):not(.o) {
+  cursor: not-allowed;
+  &:hover {
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes win {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.05) rotate(-2deg);
+  }
+  70% {
+    transform: scale(0.98) rotate(1deg);
+  }
+  100% {
+    transform: scale(1);
   }
 }

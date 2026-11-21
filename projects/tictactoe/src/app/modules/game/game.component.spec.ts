@@ -5,18 +5,18 @@ import { CommonLibraryModule } from 'common-library';
 import { BehaviorSubject } from 'rxjs';
 
 import { BoardComponent } from './components/board/board.component';
+import { MarkComponent } from './components/mark/mark.component';
 import { GameComponent } from './game.component';
 import { OnlineState, RoomState } from './models/room-info.model';
 import { SocketService } from './services/socket.service';
 
 class FakeSocketService {
-  state = new BehaviorSubject<OnlineState>({ connection: 'idle', room: null, you: null });
+  state = new BehaviorSubject<OnlineState>({ connection: 'idle', room: null, you: null, nextRoundAt: null });
   state$ = this.state.asObservable();
   hasSavedSession = false;
   connect = jasmine.createSpy('connect');
   disconnect = jasmine.createSpy('disconnect').and.resolveTo();
   playTurn = jasmine.createSpy('playTurn').and.resolveTo({ ok: true });
-  rematch = jasmine.createSpy('rematch').and.resolveTo({ ok: true });
   leaveGame = jasmine.createSpy('leaveGame').and.resolveTo({ ok: true });
   get isMyTurn() {
     const { room, you } = this.state.value;
@@ -34,7 +34,7 @@ const room = (over: Partial<RoomState> = {}): RoomState => ({
   line: [],
   scores: { X: 0, O: 0, draw: 0 },
   round: 1,
-  rematch: { X: false, O: false },
+  nextRoundInMs: null,
   ...over,
 });
 
@@ -48,7 +48,7 @@ describe('GameComponent', () => {
     socket = new FakeSocketService();
     await TestBed.configureTestingModule({
       imports: [CommonLibraryModule, NoopAnimationsModule, RouterTestingModule],
-      declarations: [GameComponent, BoardComponent],
+      declarations: [GameComponent, BoardComponent, MarkComponent],
       providers: [{ provide: SocketService, useValue: socket }],
     }).compileComponents();
 
@@ -63,23 +63,23 @@ describe('GameComponent', () => {
   });
 
   it('connects only when "Play with Friend" is selected, and disconnects when leaving it', () => {
-    component.changePlayer({ value: 'friend' } as any);
+    component.selectMode('friend');
     expect(socket.connect).toHaveBeenCalled();
-    component.changePlayer({ value: 'single' } as any);
+    component.selectMode('single');
     expect(socket.disconnect).toHaveBeenCalled();
   });
 
   describe('online room', () => {
     beforeEach(() => {
-      component.changePlayer({ value: 'friend' } as any);
+      component.selectMode('friend');
     });
 
     it('renders the server board and sends moves only on my turn', async () => {
-      socket.state.next({ connection: 'connected', you: 'X', room: room({ board: ['O', '', '', '', '', '', '', '', ''] }) });
+      socket.state.next({ connection: 'connected', you: 'X', nextRoundAt: null, room: room({ board: ['O', '', '', '', '', '', '', '', ''] }) });
       fixture.detectChanges();
       expect(el().textContent).toContain('Your turn');
-      const cells = el().querySelectorAll<HTMLButtonElement>('board button.square');
-      expect(cells[0].textContent?.trim()).toBe('O');
+      const cells = el().querySelectorAll<HTMLButtonElement>('board button.tile');
+      expect(cells[0].classList).toContain('o');
 
       cells[4].click();
       expect(socket.playTurn).toHaveBeenCalledWith(4);
@@ -90,31 +90,52 @@ describe('GameComponent', () => {
     });
 
     it('locks the board on the opponent\'s turn', () => {
-      socket.state.next({ connection: 'connected', you: 'O', room: room() });
+      socket.state.next({ connection: 'connected', you: 'O', nextRoundAt: null, room: room() });
       fixture.detectChanges();
       expect(el().textContent).toContain('Alice\'s turn');
-      el().querySelectorAll<HTMLButtonElement>('board button.square')[4].click();
+      el().querySelectorAll<HTMLButtonElement>('board button.tile')[4].click();
       expect(socket.playTurn).not.toHaveBeenCalled();
     });
 
-    it('offers a rematch after a round and shows the running score', () => {
+    it('shows the invite (room code, copy code, copy link) only until the second player joins', () => {
+      socket.state.next({ connection: 'connected', you: 'X', nextRoundAt: null, room: room({ status: 'waiting', players: { X: { name: 'Alice', connected: true }, O: null } }) });
+      fixture.detectChanges();
+      const buttons = () => Array.from(el().querySelectorAll('button')).map((b) => b.textContent?.trim());
+      expect(el().querySelector('.invite__code')?.textContent).toContain('K7QF2M');
+      expect(buttons().some((t) => t?.endsWith('Copy code'))).toBeTrue();
+      expect(buttons().some((t) => t?.endsWith('Copy invite link'))).toBeTrue();
+
+      // opponent joins -> invite disappears, game starts
+      socket.state.next({ connection: 'connected', you: 'X', nextRoundAt: null, room: room() });
+      fixture.detectChanges();
+      expect(el().querySelector('.invite')).toBeNull();
+      expect(buttons().some((t) => t?.includes('Copy'))).toBeFalse();
+
+      // opponent leaves -> invite is available again
+      socket.state.next({ connection: 'connected', you: 'X', nextRoundAt: null, room: room({ status: 'waiting', players: { X: { name: 'Alice', connected: true }, O: null } }) });
+      fixture.detectChanges();
+      expect(el().querySelector('.invite')).not.toBeNull();
+    });
+
+    it('a finished round shows the result, the winning line and a countdown; there is no rematch button', () => {
+      const now = Date.now();
       socket.state.next({
-        connection: 'connected', you: 'O',
-        room: room({ status: 'finished', winner: 'X', line: [0, 1, 2], scores: { X: 2, O: 1, draw: 1 }, round: 4, rematch: { X: true, O: false } }),
+        connection: 'connected', you: 'O', nextRoundAt: now + 2500,
+        room: room({ status: 'finished', winner: 'X', line: [0, 1, 2], scores: { X: 2, O: 1, draw: 1 }, round: 4, nextRoundInMs: 2500 }),
       });
+      component.secondsLeft = 3;
       fixture.detectChanges();
       expect(el().textContent).toContain('Alice won');
-      expect(el().textContent).toContain('Alice wants a rematch');
-      expect(el().querySelectorAll('board button.square.win').length).toBe(3);
-      const button = Array.from(el().querySelectorAll('button')).find((b) => b.textContent?.includes('Accept rematch'))!;
-      button.click();
-      expect(socket.rematch).toHaveBeenCalled();
-      const scores = Array.from(el().querySelectorAll('.game-stats .stats span')).map((s) => s.textContent);
+      expect(el().textContent).toContain('Next round in 3s');
+      expect(el().querySelectorAll('board .tile.win').length).toBe(3);
+      expect(el().querySelector('.countdown')).not.toBeNull();
+      expect(Array.from(el().querySelectorAll('button')).some((b) => /again|rematch/i.test(b.textContent ?? ''))).toBeFalse();
+      const scores = Array.from(el().querySelectorAll('.score__n')).map((s) => s.textContent?.trim());
       expect(scores).toEqual(['2', '1', '1']);
     });
 
     it('shows when the opponent dropped', () => {
-      socket.state.next({ connection: 'connected', you: 'X', room: room({ players: { X: { name: 'Alice', connected: true }, O: { name: 'Bob', connected: false } } }) });
+      socket.state.next({ connection: 'connected', you: 'X', nextRoundAt: null, room: room({ players: { X: { name: 'Alice', connected: true }, O: { name: 'Bob', connected: false } } }) });
       fixture.detectChanges();
       expect(el().textContent).toContain('Bob lost connection');
     });
