@@ -187,6 +187,8 @@ export class GameComponent implements OnInit, OnDestroy {
   get opponent(): Mark | null { return this.you === 'X' ? 'O' : this.you === 'O' ? 'X' : null; }
   get isMyTurn(): boolean { return this.socketService.isMyTurn; }
   get connected(): boolean { return this.online.connection === 'connected'; }
+  /** The options column exists whenever there is a game (not in the online start/join form). */
+  get hasRail(): boolean { return this.player !== 'friend' || !!this.room; }
   /** Both seats taken: the invite UI goes away and the match runs by itself. */
   get bothJoined(): boolean { return !!this.room?.players.X && !!this.room?.players.O; }
   get finished(): boolean { return this.room?.status === 'finished'; }

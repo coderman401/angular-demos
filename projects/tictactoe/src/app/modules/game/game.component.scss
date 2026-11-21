@@ -1,5 +1,19 @@
+:host {
+  // vertical centring: when the screen is taller than the game, the free space is split
+  // above and below (auto margins collapse to 0 when the page is taller than the screen)
+  display: block;
+  width: 100%;
+  margin-block: auto;
+}
+
 .game {
   padding-block: 32px 8px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .title {
@@ -18,6 +32,8 @@
 }
 
 .play {
+  // one width for scoreboard, mascot line and board so their edges line up; it grows on tall screens
+  --board-size: clamp(420px, calc(100vh - 560px), 560px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -29,8 +45,9 @@
     align-items: center;
     gap: 20px;
     width: 100%;
-    max-width: 560px;
+    max-width: var(--board-size);
     min-width: 0;
+    container: main / inline-size;
   }
   &--lobby &__main {
     max-width: 760px;
@@ -111,6 +128,55 @@
     text-align: center;
   }
 }
+
+// narrow scoreboards drop the second line so names and scores never truncate
+@container main (max-width: 480px) {
+  .match__who small {
+    display: none;
+  }
+}
+
+// tablets: the title and mode switch sit over the board column (the options column is to the right)
+@media (min-width: 700px) and (max-width: 999px) {
+  .game--rail .head {
+    padding-right: 248px; // options column 220px + 28px gap, so the board's axis is the title's axis
+  }
+}
+// the narrowest tablets: drop the small icons so the mode switch fits beside the options column
+@media (min-width: 700px) and (max-width: 759px) {
+  .game--rail .modes .seg__btn mat-icon {
+    display: none;
+  }
+}
+
+// laptops and desktops: symmetric columns keep the board on the page's centre line,
+// with the options column hanging off to the right
+@media (min-width: 1000px) {
+  .play {
+    display: grid;
+    grid-template-columns: minmax(248px, 1fr) minmax(0, var(--board-size)) minmax(248px, 1fr);
+    align-items: start;
+    gap: 0;
+
+    &__main {
+      grid-column: 2;
+      max-width: none;
+    }
+    &__side {
+      grid-column: 3;
+      justify-self: start;
+      margin-left: 28px;
+    }
+    &--lobby {
+      grid-template-columns: minmax(0, 760px);
+      justify-content: center;
+    }
+    &--lobby &__main {
+      grid-column: 1;
+    }
+  }
+}
+
 
 /* ---------- match strip ---------- */
 .match {

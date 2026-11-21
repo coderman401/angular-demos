@@ -1,5 +1,6 @@
-<div class="wrap game">
+<div class="wrap game" [class.game--rail]="hasRail">
 
+  <header class="head">
   <h1 class="display title">Tic Tac Toe</h1>
 
   <!-- Mode -->
@@ -11,6 +12,7 @@
       </button>
     </div>
   </div>
+  </header>
 
   <div class="play" [class.play--lobby]="player === 'friend' && !room">
   <div class="play__main">
