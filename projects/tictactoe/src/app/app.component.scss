@@ -68,15 +68,17 @@
     flex: none;
     .lip { fill: var(--p-lip); }
     .face { fill: var(--p); }
-    .cheek { fill: var(--s); }
-    .ink-stroke,
-    .ink-ring {
+    .mark-x {
       fill: none;
       stroke: var(--on-p);
-      stroke-width: 3;
+      stroke-width: 3.8;
       stroke-linecap: round;
     }
-    .smile { stroke-width: 2.8; }
+    .mark-o {
+      fill: none;
+      stroke: var(--s);
+      stroke-width: 4.2;
+    }
   }
   &:hover &__logo {
     animation: wiggle 0.5s var(--ease-pop);
