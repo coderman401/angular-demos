@@ -6,17 +6,16 @@
       <svg class="brand__logo" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
         <rect y="4" width="40" height="36" rx="11" class="lip" />
         <rect width="40" height="36" rx="11" class="face" />
-        <circle cx="14" cy="15" r="3.2" class="eye" />
-        <circle cx="26" cy="15" r="3.2" class="eye" />
-        <circle cx="9" cy="22" r="2.4" class="cheek" />
-        <circle cx="31" cy="22" r="2.4" class="cheek" />
-        <path d="M16.5 22.5q3.5 3.5 7 0" class="smile" />
+        <path d="M9.6 10.4l6.4 6.4M16 10.4l-6.4 6.4" class="ink-stroke" />
+        <circle cx="28" cy="13.6" r="3.7" class="ink-ring" />
+        <path d="M14.5 23.2q5.5 5.2 11 0" class="ink-stroke smile" />
+        <circle cx="8.2" cy="23" r="2.6" class="cheek" />
+        <circle cx="31.8" cy="23" r="2.6" class="cheek" />
       </svg>
       <span class="brand__name display">tictactoe</span>
     </a>
 
     <nav class="nav__links" aria-label="Site">
-      <a class="pill-link" href="https://coderman401.web.app/demos" target="_blank" rel="noopener">More demos</a>
       <button type="button" class="icon-btn" (click)="sound.toggle()" [attr.aria-pressed]="sound.enabled"
         [attr.aria-label]="sound.enabled ? 'Mute sounds' : 'Turn sounds on'" [title]="sound.enabled ? 'Mute sounds' : 'Turn sounds on'">
         <mat-icon>{{ sound.enabled ? 'volume_up' : 'volume_off' }}</mat-icon>
@@ -39,9 +38,9 @@
     <p class="foot__lead display">Fancy another game?</p>
     <p class="foot__text">Play the computer, pass the phone around, or send a friend a room code.</p>
     <nav class="foot__links" aria-label="Footer">
-      <a href="https://coderman401.web.app/demos" target="_blank" rel="noopener">More demos</a>
+      <a href="https://kishanpanchal.in" target="_blank" rel="noopener">More demos</a>
       <a href="https://github.com/coderman401/angular-demos" target="_blank" rel="noopener">Source code</a>
     </nav>
-    <p class="foot__credit">Made by Coderman401</p>
+    <p class="foot__credit">Made by <a href="https://kishanpanchal.in" target="_blank" rel="noopener">Kishan Panchal</a></p>
   </div>
 </footer>

@@ -1,7 +1,13 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, Output, ViewChild } from '@angular/core';
 
-/** Cell centres in a 0-100 box (3 equal columns with small gaps). */
-const CENTRE = [16.4, 50, 83.6];
+export interface Strike {
+  w: number;
+  h: number;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
 
 /** Presentational 3x3 board. The parent decides what a click means (local or online). */
 @Component({
@@ -9,7 +15,7 @@ const CENTRE = [16.4, 50, 83.6];
   templateUrl: './board.component.html',
   styleUrls: ['./board.component.scss']
 })
-export class BoardComponent {
+export class BoardComponent implements OnChanges, AfterViewInit {
 
   readonly cells = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -22,6 +28,11 @@ export class BoardComponent {
   /** The mark a click would place; shown faintly on hover. */
   @Input() ghost: string | null = null;
   @Output() cellClick = new EventEmitter<number>();
+
+  @ViewChild('grid', { static: true }) grid!: ElementRef<HTMLElement>;
+
+  /** Line through the winning tiles, measured from the real tile positions so it is always centred. */
+  strike: Strike | null = null;
 
   /** Roving tab stop for arrow-key navigation. */
   focusIndex = 4;
@@ -67,14 +78,31 @@ export class BoardComponent {
     this.clickSquare(index);
   }
 
-  get strike(): { x1: number; y1: number; x2: number; y2: number } | null {
-    if (this.winLine.length !== 3) return null;
-    const [a, , c] = this.winLine;
-    const p = (i: number) => ({ x: CENTRE[i % 3], y: CENTRE[Math.floor(i / 3)] });
-    const s = p(a), e = p(c);
-    // extend a little past the outer cells
-    const dx = (e.x - s.x) * 0.12, dy = (e.y - s.y) * 0.12;
-    return { x1: s.x - dx, y1: s.y - dy, x2: e.x + dx, y2: e.y + dy };
+  ngOnChanges() {
+    this.strike = null;
+    Promise.resolve().then(() => this.measure());
+  }
+
+  ngAfterViewInit() {
+    // measured one tick later: changing a binding during AfterViewInit would be an ExpressionChanged error
+    Promise.resolve().then(() => this.measure());
+  }
+
+  @HostListener('window:resize')
+  measure() {
+    if (this.winLine.length !== 3) {
+      this.strike = null;
+      return;
+    }
+    const grid = this.grid.nativeElement;
+    const tiles = grid.querySelectorAll<HTMLElement>('.tile');
+    const centre = (i: number) => ({ x: tiles[i].offsetLeft + tiles[i].offsetWidth / 2, y: tiles[i].offsetTop + tiles[i].offsetHeight / 2 });
+    const a = centre(this.winLine[0]);
+    const c = centre(this.winLine[2]);
+    // run a little past the outer tiles
+    const dx = (c.x - a.x) * 0.1;
+    const dy = (c.y - a.y) * 0.1;
+    this.strike = { w: grid.clientWidth, h: grid.clientHeight, x1: a.x - dx, y1: a.y - dy, x2: c.x + dx, y2: c.y + dy };
   }
 
   private focus(index: number) {

@@ -1,5 +1,5 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
@@ -8,10 +8,11 @@ import { Subscription, timer } from 'rxjs';
 
 import { SoundService } from '../../services/sound.service';
 import { MascotMood } from './components/mascot/mascot.component';
+import { ConfirmComponent } from './components/confirm/confirm.component';
 import { StateTableComponent } from './components/state-table/state-table.component';
 import { Mark, OnlineState, RoomState, SocketAck } from './models/room-info.model';
 import { WinnersData } from './models/winning-count.model';
-import { GameService } from './services/game.service';
+import { GameService, LOCAL_ROUND_PAUSE_MS } from './services/game.service';
 import { SocketService } from './services/socket.service';
 
 export type SheetTone = 'win' | 'lose' | 'draw';
@@ -67,8 +68,6 @@ export class GameComponent implements OnInit, OnDestroy {
   userJoin = new FormControl('', [Validators.required]);
   roomId = new FormControl('', [Validators.required]);
 
-  @ViewChild('sheetButton') sheetButton?: ElementRef<HTMLButtonElement>;
-
   private sub = new Subscription();
   private copiedTimer?: ReturnType<typeof setTimeout>;
   private announcedLocal: unknown = null;
@@ -91,6 +90,10 @@ export class GameComponent implements OnInit, OnDestroy {
       this.sound.play('x');
       this.announceLocalResult();
     };
+    this.gameService.onAutoRestart = () => {
+      this.announcedLocal = null;
+      this.sound.play('tap');
+    };
 
     this.sub.add(this.socketService.state$.subscribe((state) => {
       const prev = this.online;
@@ -99,7 +102,7 @@ export class GameComponent implements OnInit, OnDestroy {
     }));
     // Drives the "Next round in 3" label; only does work while a round is finished.
     this.sub.add(timer(0, 250).subscribe(() => {
-      const at = this.online.nextRoundAt;
+      const at = this.player === 'friend' ? this.online.nextRoundAt : this.gameService.nextRoundAt;
       this.secondsLeft = at ? Math.max(0, Math.ceil((at - Date.now()) / 1000)) : null;
     }));
 
@@ -116,13 +119,15 @@ export class GameComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.sub.unsubscribe();
     this.gameService.onAiMove = undefined;
+    this.gameService.onAutoRestart = undefined;
     if (this.copiedTimer) clearTimeout(this.copiedTimer);
   }
 
   //#region modes
 
-  selectMode(mode: string) {
+  async selectMode(mode: string) {
     if (mode === this.player) return;
+    if (this.player === 'friend' && this.room && !(await this.confirmLeave())) return;
     const previous = this.gameService.player;
     this.player = mode;
     this.gameService.setPlayer(mode);
@@ -163,12 +168,6 @@ export class GameComponent implements OnInit, OnDestroy {
     this.announceLocalResult();
   }
 
-  nextLocalRound() {
-    this.gameService.nextRound();
-    this.announcedLocal = null;
-    this.sound.play('tap');
-  }
-
   /** Sound, confetti and focus for a finished local round (once per result). */
   private announceLocalResult() {
     const result = this.gameService.result;
@@ -177,8 +176,6 @@ export class GameComponent implements OnInit, OnDestroy {
     const youWon = this.player === 'single' ? result.winner === 'O' : result.winner !== 'draw';
     const tone = result.winner === 'draw' ? 'draw' : youWon ? 'win' : 'lose';
     this.celebrate(tone);
-    // move keyboard focus to the banner's button so Enter starts the next round
-    setTimeout(() => this.sheetButton?.nativeElement.focus(), 450);
   }
 
   //#endregion local play
@@ -221,8 +218,25 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   async leaveRoom() {
+    if (!(await this.confirmLeave())) return;
     this.onlineStreak = 0;
     await this.socketService.leaveGame();
+  }
+
+  /** Asks before leaving a room. Nothing to lose without a room, so no question then. */
+  private confirmLeave(): Promise<boolean> {
+    if (!this.room) return Promise.resolve(true);
+    const playing = this.bothJoined;
+    return new Promise((resolve) => {
+      this.dialog.open(ConfirmComponent, {
+        width: '420px',
+        maxWidth: '92vw',
+        autoFocus: false,
+        data: playing
+          ? { title: 'Leave this game?', text: `${this.opponentName} will be left waiting and your score in this room is lost.`, stay: 'Keep playing', leave: 'Leave game' }
+          : { title: 'Close this room?', text: 'The room code stops working, so your friend can no longer join with it.', stay: 'Stay', leave: 'Close room' },
+      }).afterClosed().subscribe((ok) => resolve(ok === true));
+    });
   }
 
   copyRoomCode() {
@@ -298,25 +312,32 @@ export class GameComponent implements OnInit, OnDestroy {
     if (tone === 'win') this.confetti++;
   }
 
-  /** The round-end banner, for every mode. */
+  private lastSheet: Sheet | null = null;
+
+  /** The round-end banner, for every mode. Returns the same object while its content is unchanged. */
   get sheet(): Sheet | null {
+    const next = this.buildSheet();
+    const prev = this.lastSheet;
+    if (next && prev && next.tone === prev.tone && next.title === prev.title && next.text === prev.text) return prev;
+    return (this.lastSheet = next);
+  }
+
+  private buildSheet(): Sheet | null {
     if (this.player === 'friend') {
       const r = this.room;
       if (!r || r.status !== 'finished' || !this.you) return null;
-      const next = this.secondsLeft ? `Next round in ${this.secondsLeft}` : 'Starting the next round…';
-      if (r.winner === 'draw') return { tone: 'draw', title: 'It\'s a draw', text: next };
+      if (r.winner === 'draw') return { tone: 'draw', title: 'It\'s a draw', text: '' };
       if (r.winner === this.you) {
-        const streak = this.onlineStreak >= 2 ? `${this.onlineStreak} wins in a row. ` : '';
-        return { tone: 'win', title: 'You won!', text: streak + next };
+        return { tone: 'win', title: 'You won!', text: this.onlineStreak >= 2 ? `${this.onlineStreak} wins in a row.` : '' };
       }
-      return { tone: 'lose', title: `${this.opponentName} won`, text: next };
+      return { tone: 'lose', title: `${this.opponentName} won`, text: '' };
     }
 
     const res = this.gameService.result;
     if (!res) return null;
     if (this.player === 'two') {
-      if (res.winner === 'draw') return { tone: 'draw', title: 'It\'s a draw', text: 'Nobody slipped. The other player starts next.' };
-      return { tone: 'win', title: `Player ${res.winner} wins!`, text: `Score ${this.winningCount.xWins}–${this.winningCount.oWins}. The other player starts next.` };
+      if (res.winner === 'draw') return { tone: 'draw', title: 'It\'s a draw', text: 'The other player starts the next round.' };
+      return { tone: 'win', title: `Player ${res.winner} wins!`, text: `X ${this.winningCount.xWins}, O ${this.winningCount.oWins}. The other player starts the next round.` };
     }
     if (res.winner === 'draw') return { tone: 'draw', title: 'It\'s a draw', text: 'Not bad. Tic couldn\'t get you.' };
     if (res.winner === 'O') {
@@ -326,8 +347,9 @@ export class GameComponent implements OnInit, OnDestroy {
     return { tone: 'lose', title: 'Tic won this one', text: 'Watch the corners. You go first again.' };
   }
 
-  get sheetAction(): string {
-    return this.sheet?.tone === 'lose' ? 'Try again' : 'Next round';
+  /** Length of the pause before the next round, for the banner's progress bar. */
+  get roundPauseMs(): number {
+    return this.player === 'friend' ? this.room?.nextRoundInMs ?? 0 : LOCAL_ROUND_PAUSE_MS;
   }
 
   /** What the mascot says, and its face. */
@@ -364,15 +386,14 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   /** Data for the two sides of the match strip. */
-  side(mark: Mark): { name: string; note: string; score: number; initial: string; turn: boolean; offline: boolean; you: boolean } {
+  side(mark: Mark): { name: string; note: string; score: number; turn: boolean; offline: boolean; you: boolean } {
     if (this.player === 'friend') {
       const p = this.room?.players[mark];
       const r = this.room;
       return {
         name: p?.name ?? 'Waiting…',
-        note: !p ? 'Not joined yet' : this.you === mark ? 'You' : p.connected ? 'Friend' : 'Offline',
+        note: !p ? 'Not joined yet' : !p.connected ? 'Offline' : `${this.you === mark ? 'You' : 'Friend'}, plays ${mark}`,
         score: r?.scores[mark] ?? 0,
-        initial: p ? p.name.charAt(0).toUpperCase() : '?',
         turn: r?.status === 'playing' && r.turn === mark,
         offline: !!p && !p.connected,
         you: this.you === mark,
@@ -384,10 +405,9 @@ export class GameComponent implements OnInit, OnDestroy {
     return {
       name: single ? (mark === 'X' ? 'Tic' : 'You') : `Player ${mark}`,
       note: single
-        ? (mark === 'X' ? `Computer, ${this.difficultyLabel.toLowerCase()}` : this.gameService.streak >= 2 ? `${this.gameService.streak} wins in a row` : 'Plays O')
-        : (this.xStartsTwoPlayer === (mark === 'X') ? 'Starts this round' : 'Plays ' + mark),
+        ? (mark === 'X' ? `Plays X, ${this.difficultyLabel.toLowerCase()}` : this.gameService.streak >= 2 ? `${this.gameService.streak} wins in a row` : 'Plays O')
+        : (this.xStartsTwoPlayer === (mark === 'X') ? `Plays ${mark}, starts` : `Plays ${mark}`),
       score: mark === 'X' ? this.winningCount.xWins : this.winningCount.oWins,
-      initial: mark,
       turn: !result && nextMark === mark,
       offline: false,
       you: single && mark === 'O',

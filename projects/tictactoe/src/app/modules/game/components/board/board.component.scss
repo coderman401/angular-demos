@@ -8,7 +8,7 @@
   position: relative;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 3%;
+  gap: clamp(8px, 2.6vw, 14px);
 }
 
 .tile {
@@ -111,11 +111,11 @@
   }
   &__under {
     stroke: var(--bg);
-    stroke-width: 4.6;
+    stroke-width: 18;
   }
   &__line {
     stroke: var(--heading);
-    stroke-width: 2.4;
+    stroke-width: 10;
   }
 }
 

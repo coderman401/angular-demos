@@ -20,10 +20,9 @@
         <div *ngIf="side($any(m)) as s" class="match__side" [class.o]="m === 'O'" [class.turn]="s.turn"
           [class.offline]="s.offline">
           <span class="avatar" [class.avatar--o]="m === 'O'" [class.avatar--tic]="player === 'single' && m === 'X'"
-            [attr.aria-hidden]="true">
-            <ttt-mascot *ngIf="player === 'single' && m === 'X'; else letter" [mood]="speech.mood"></ttt-mascot>
-            <ng-template #letter>{{ s.initial }}</ng-template>
-            <span class="avatar__mark"><ttt-mark [type]="m"></ttt-mark></span>
+            aria-hidden="true">
+            <ttt-mascot *ngIf="player === 'single' && m === 'X'; else glyph" [mood]="speech.mood"></ttt-mascot>
+            <ng-template #glyph><ttt-mark [type]="m"></ttt-mark></ng-template>
           </span>
           <span class="match__who">
             <b>{{ s.name }}</b>
@@ -139,13 +138,11 @@
     </span>
     <div class="sheet__copy">
       <p class="sheet__title">{{ sh.title }}</p>
-      <p class="sheet__text">{{ sh.text }}</p>
+      <p class="sheet__text" *ngIf="sh.text">{{ sh.text }}</p>
     </div>
-    <button #sheetButton *ngIf="player !== 'friend'" type="button" class="btn sheet__btn"
-      [class.btn--secondary]="sh.tone === 'win'" [class.btn--danger]="sh.tone === 'lose'"
-      [class.btn--primary]="sh.tone === 'draw'" (click)="nextLocalRound()">{{ sheetAction }}</button>
-    <div class="sheet__timer" *ngIf="player === 'friend' && room?.nextRoundInMs !== null" aria-hidden="true">
-      <span [style.animation-duration.ms]="room?.nextRoundInMs"></span>
+    <div class="sheet__timer" *ngIf="roundPauseMs > 0">
+      <span class="sheet__count" *ngIf="secondsLeft !== null">Next round in {{ secondsLeft }}</span>
+      <span class="sheet__bar" aria-hidden="true"><i [style.animation-duration.ms]="roundPauseMs"></i></span>
     </div>
   </div>
 </div>

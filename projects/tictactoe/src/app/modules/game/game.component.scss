@@ -125,8 +125,7 @@
   background: var(--p);
   box-shadow: 0 3px 0 var(--p-lip);
   color: var(--on-p);
-  font-size: 20px;
-  font-weight: 900;
+  font-size: 26px;
 
   &--o {
     background: var(--s);
@@ -142,24 +141,6 @@
       height: 46px;
     }
   }
-  &__mark {
-    position: absolute;
-    right: -6px;
-    bottom: -6px;
-    display: grid;
-    place-items: center;
-    width: 20px;
-    height: 20px;
-    border: var(--edge) solid var(--bg);
-    border-radius: 50%;
-    background: var(--heading);
-    color: var(--bg);
-    font-size: 11px;
-  }
-}
-.match__side.o .avatar__mark {
-  right: auto;
-  left: -6px;
 }
 
 /* ---------- mascot + speech bubble ---------- */
@@ -341,18 +322,25 @@ board.pop {
     font-weight: 700;
     opacity: 0.85;
   }
-  &__btn {
-    flex: none;
-    min-width: 160px;
-  }
   &__timer {
     flex: none;
-    width: 120px;
+    display: grid;
+    gap: 6px;
+    width: 150px;
+  }
+  &__count {
+    color: var(--tone-ink);
+    font-size: 14px;
+    font-weight: 800;
+    text-align: right;
+  }
+  &__bar {
+    display: block;
     height: 12px;
     border-radius: 999px;
     background: color-mix(in srgb, var(--tone-badge) 25%, transparent);
     overflow: hidden;
-    span {
+    i {
       display: block;
       height: 100%;
       border-radius: inherit;
@@ -430,11 +418,11 @@ board.pop {
     width: 44px;
     height: 44px;
   }
-  .sheet__btn {
-    width: 100%;
-  }
   .sheet__timer {
     width: 100%;
+  }
+  .sheet__count {
+    text-align: left;
   }
   .sheet-spacer {
     height: 170px;
@@ -456,7 +444,7 @@ board.pop {
   .avatar {
     width: 36px;
     height: 36px;
-    font-size: 17px;
+    font-size: 22px;
   }
   .avatar--tic ttt-mascot {
     width: 38px;

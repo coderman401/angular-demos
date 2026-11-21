@@ -25,6 +25,8 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "projects/tictactoe/src/favicon.ico",
+              "projects/tictactoe/src/favicon.svg",
+              "projects/tictactoe/src/apple-touch-icon.png",
               "projects/tictactoe/src/assets",
               {
                 "glob": "**/*",

@@ -1,8 +1,24 @@
 :host {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   background: var(--bg);
+  isolation: isolate;
+}
+
+// the original doodle pattern, behind everything
+:host::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url("/assets/images/bg.png");
+  pointer-events: none;
+}
+:host-context(body.dark-theme)::before {
+  filter: invert(1);
+  opacity: 0.045;
 }
 
 .skip-link {
@@ -47,41 +63,28 @@
   gap: 10px;
 
   &__logo {
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
+    flex: none;
     .lip { fill: var(--p-lip); }
     .face { fill: var(--p); }
-    .eye { fill: var(--on-p); }
     .cheek { fill: var(--s); }
-    .smile {
+    .ink-stroke,
+    .ink-ring {
       fill: none;
       stroke: var(--on-p);
-      stroke-width: 2.2;
+      stroke-width: 3;
       stroke-linecap: round;
     }
+    .smile { stroke-width: 2.8; }
+  }
+  &:hover &__logo {
+    animation: wiggle 0.5s var(--ease-pop);
   }
   &__name {
     font-size: 28px;
     font-weight: 700;
     color: var(--p-text);
-  }
-}
-
-// reference: "nav language pill" - uppercase, tracked, 2px Faded Gray border
-.pill-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 0 16px;
-  border: var(--edge) solid var(--line-strong);
-  border-radius: var(--r-sm);
-  color: var(--muted);
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.053em;
-  text-transform: uppercase;
-  &:hover {
-    color: var(--heading);
   }
 }
 
@@ -158,10 +161,16 @@
   }
 }
 
-@media (max-width: 560px) {
-  .pill-link {
-    display: none;
+@keyframes wiggle {
+  30% {
+    transform: rotate(-8deg) scale(1.06);
   }
+  60% {
+    transform: rotate(6deg) scale(1.06);
+  }
+}
+
+@media (max-width: 560px) {
   .brand__name {
     font-size: 24px;
   }

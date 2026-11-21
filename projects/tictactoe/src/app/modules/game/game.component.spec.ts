@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import { CommonLibraryModule } from 'common-library';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 
 import { BoardComponent } from './components/board/board.component';
 import { MarkComponent } from './components/mark/mark.component';
@@ -139,6 +139,42 @@ describe('GameComponent', () => {
       const scores = Array.from(el().querySelectorAll('.match__score')).map((s) => s.textContent?.trim());
       expect(scores).toEqual(['2', '1']);
       expect(el().querySelector('.match__draws')?.textContent?.trim()).toBe('1 draw');
+    });
+
+    it('asks before leaving a room and only leaves when confirmed', async () => {
+      socket.state.next({ connection: 'connected', you: 'X', nextRoundAt: null, room: room() });
+      fixture.detectChanges();
+      const open = spyOn(component.dialog, 'open');
+
+      open.and.returnValue({ afterClosed: () => of(false) } as any);
+      await component.leaveRoom();
+      expect(open).toHaveBeenCalledTimes(1);
+      expect((open.calls.mostRecent().args[1] as any).data.title).toBe('Leave this game?');
+      expect(socket.leaveGame).not.toHaveBeenCalled();
+
+      open.and.returnValue({ afterClosed: () => of(true) } as any);
+      await component.leaveRoom();
+      expect(socket.leaveGame).toHaveBeenCalledTimes(1);
+    });
+
+    it('asks before switching mode while in a room, and uses a different message while waiting', async () => {
+      socket.state.next({ connection: 'connected', you: 'X', nextRoundAt: null, room: room({ status: 'waiting', players: { X: { name: 'Alice', connected: true }, O: null } }) });
+      fixture.detectChanges();
+      const open = spyOn(component.dialog, 'open').and.returnValue({ afterClosed: () => of(false) } as any);
+      await component.selectMode('single');
+      expect(component.player).toBe('friend', 'stays online when the player keeps the room');
+      expect((open.calls.mostRecent().args[1] as any).data.title).toBe('Close this room?');
+
+      open.and.returnValue({ afterClosed: () => of(true) } as any);
+      await component.selectMode('single');
+      expect(component.player).toBe('single');
+    });
+
+    it('does not ask anything when there is no room to lose', async () => {
+      const open = spyOn(component.dialog, 'open');
+      await component.selectMode('single');
+      expect(open).not.toHaveBeenCalled();
+      expect(component.player).toBe('single');
     });
 
     it('shows when the opponent dropped', () => {

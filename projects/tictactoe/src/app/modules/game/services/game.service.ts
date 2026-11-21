@@ -13,6 +13,8 @@ export interface LocalResult {
 }
 
 const AI_THINK_MS = 450;
+/** How long a finished local round stays on screen before the next one starts by itself. */
+export const LOCAL_ROUND_PAUSE_MS = 3000;
 
 /**
  * Local play: "single" (you are O, the computer is X) and "two" (pass and play).
@@ -29,11 +31,16 @@ export class GameService {
   private _difficulty = 'expert';
   private _winningCount = new WinningCount();
   private aiTimer?: ReturnType<typeof setTimeout>;
+  private roundTimer?: ReturnType<typeof setTimeout>;
   /** Who opens the next two-player round; alternates every round. */
   private twoPlayerStarter: LocalMark = 'X';
 
   result: LocalResult | null = null;
   aiThinking = false;
+  /** Local timestamp (ms) when the next round starts; set while a result is showing. */
+  nextRoundAt: number | null = null;
+  /** Called when a local round restarts by itself (sound, reset of UI-only state). */
+  onAutoRestart?: () => void;
   lastMove: number | null = null;
   /** Current run of wins for "You" in single player (persisted). */
   streak = 0;
@@ -129,7 +136,7 @@ export class GameService {
   /** Optional hook so the UI can react (sound, focus) when the computer has moved. */
   onAiMove?: (index: number) => void;
 
-  /** Starts the next local round after a result. */
+  /** Starts the next local round (called automatically after the pause). */
   nextRound() {
     if (this.player === 'two') {
       this.twoPlayerStarter = this.twoPlayerStarter === 'X' ? 'O' : 'X';
@@ -148,6 +155,9 @@ export class GameService {
 
   private clearBoard() {
     if (this.aiTimer) clearTimeout(this.aiTimer);
+    if (this.roundTimer) clearTimeout(this.roundTimer);
+    this.roundTimer = undefined;
+    this.nextRoundAt = null;
     this.aiThinking = false;
     this.result = null;
     this.lastMove = null;
@@ -178,6 +188,11 @@ export class GameService {
       this.localStorageService.setItem('xo.streak', this.streak);
     }
     this.result = { winner, line: win?.line ?? [] };
+    this.nextRoundAt = Date.now() + LOCAL_ROUND_PAUSE_MS;
+    this.roundTimer = setTimeout(() => {
+      this.nextRound();
+      this.onAutoRestart?.();
+    }, LOCAL_ROUND_PAUSE_MS);
     return true;
   }
 

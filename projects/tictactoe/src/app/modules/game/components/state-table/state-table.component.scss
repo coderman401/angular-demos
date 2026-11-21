@@ -1,36 +1,69 @@
 .stats {
   width: 100%;
+  table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0 8px;
-  text-align: center;
 
   th,
   td {
-    padding: 10px 12px;
-    font-weight: 800;
+    padding: 10px 8px;
+    text-align: center;
+    vertical-align: middle;
     color: var(--heading);
   }
+  col,
+  th:first-child {
+    width: 38%;
+  }
+
   thead th {
-    font-size: 13px;
+    padding-block: 0 4px;
     color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    font-size: 14px;
+    font-weight: 800;
     ttt-mark {
-      font-size: 16px;
+      display: inline-flex;
+      font-size: 22px;
+    }
+    &.x ttt-mark {
+      color: var(--p-text);
+    }
+    &.o ttt-mark {
+      color: light-dark(#4d6600, var(--s));
     }
   }
+
   tbody tr {
     background: var(--fill);
   }
   tbody th {
-    text-align: left;
+    padding-left: 16px;
     border-radius: 12px 0 0 12px;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 800;
+  }
+  tbody td {
+    font-size: 22px;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
   }
   tbody td:last-child {
     border-radius: 0 12px 12px 0;
   }
-  td {
-    font-family: var(--font-display) !important;
-    font-size: 22px;
-  }
+}
+
+.note {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
