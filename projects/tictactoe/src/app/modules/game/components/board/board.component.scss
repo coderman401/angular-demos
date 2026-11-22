@@ -9,7 +9,7 @@
   position: relative;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: clamp(8px, 2.6vw, 14px);
+  gap: clamp(8px, 2.6vw, 12px);
 }
 
 .tile {

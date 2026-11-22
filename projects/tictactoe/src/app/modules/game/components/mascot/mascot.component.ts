@@ -46,7 +46,7 @@ export type MascotMood = 'idle' | 'happy' | 'sad' | 'think' | 'wait';
       </ng-container>
     </svg>`,
   styles: [`
-    :host { display: inline-block; width: 72px; height: 72px; flex: none; }
+    :host { display: inline-block; width: 64px; height: 64px; flex: none; }
     svg { width: 100%; height: 100%; overflow: visible; transform-origin: 50% 90%; }
     .lip { fill: var(--p-lip); }
     .face { fill: var(--p); }

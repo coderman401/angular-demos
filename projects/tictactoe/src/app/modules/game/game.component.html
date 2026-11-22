@@ -1,7 +1,6 @@
 <div class="wrap game" [class.game--rail]="hasRail">
 
   <header class="head">
-  <h1 class="display title">Tic Tac Toe</h1>
 
   <!-- Mode -->
   <div class="modes">
@@ -116,12 +115,16 @@
 
     <!-- Board -->
     <ng-container *ngIf="player !== 'friend'">
+      <div class="board-card card">
       <board [squares]="gameService.squares" [winLine]="gameService.result?.line ?? []" [disabled]="gameService.locked"
         [lastMove]="gameService.lastMove" [ghost]="ghost" (cellClick)="onLocalCellClick($event)"></board>
+    </div>
     </ng-container>
     <ng-container *ngIf="player === 'friend' && room && bothJoined">
+      <div class="board-card card">
       <board class="pop" [squares]="room.board" [winLine]="room.line" [disabled]="boardLocked" [lastMove]="onlineLastMove"
         [ghost]="ghost" (cellClick)="onOnlineCellClick($event)"></board>
+      </div>
     </ng-container>
 
   </div>

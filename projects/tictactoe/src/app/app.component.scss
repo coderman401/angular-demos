@@ -48,7 +48,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 68px;
+    min-height: 64px;
   }
   &__links {
     display: flex;
@@ -84,7 +84,7 @@
     animation: wiggle 0.5s var(--ease-pop);
   }
   &__name {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 700;
     color: var(--p-text);
   }
@@ -93,8 +93,8 @@
 .icon-btn {
   display: inline-grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border: var(--edge) solid var(--line-strong);
   border-bottom-width: var(--lip);
   border-radius: var(--r-sm);
@@ -162,6 +162,6 @@
     display: none;
   }
   .brand__name {
-    font-size: 24px;
+    font-size: 20px;
   }
 }
